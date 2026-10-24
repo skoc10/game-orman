@@ -19,6 +19,17 @@ extends Resource
 @export var exertion_drain_mult := 1.6
 @export var starve_damage := 0.5
 @export var dehydrate_damage := 0.8
+## Suda dayanıklılık bitince saniyede verilen hasar.
+@export var drown_damage := 3.0
+
+@export_group("Su içme")
+## Göl ya da dereden bir yudumun süresi ve verdiği su.
+@export var sip_time := 0.8
+@export var lake_sip_thirst := 12.0
+@export var raw_water_nausea_chance := 0.08
+@export var raw_water_nausea_time := 30.0
+## Deniz suyu susuzluğu artırır.
+@export var sea_sip_thirst := -6.0
 
 @export_group("Can")
 @export var health_regen := 0.3

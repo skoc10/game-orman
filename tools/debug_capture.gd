@@ -4,7 +4,9 @@ extends Node
 ##   godot --path . -- --seed=42 --time=21.5 --pos=10,-30 --height=2 \
 ##       --yaw=90 --pitch=-10 --shot=/tmp/gece.png --frames=60
 ## Argümanlar: seed, time (saat), pos (x,z), height (yere göre m), fly,
-## yaw/pitch (derece), shot (PNG yolu), frames (beklenecek kare), timescale.
+## yaw/pitch (derece), shot (PNG yolu), frames (beklenecek kare), timescale,
+## stats (can,tokluk,su,ısı), atlake (göl kıyısına suya bakarak yerleş),
+## damage (miktar), nausea (saniye), give (eşya:adet,...).
 ## shot verilirse görüntü alındıktan sonra oyun kapanır.
 
 var args := {}
@@ -37,12 +39,36 @@ func on_world_ready(world: Node) -> void:
 		player.teleport(p)
 	if args.has("fly") or float(args.get("height", "0")) > 3.0:
 		player.debug_fly = true
+	if args.has("atlake"):
+		_place_at_lake(world, player)
 	if args.has("yaw") or args.has("pitch"):
 		player.teleport(player.global_position, float(args.get("yaw", rad_to_deg(player.rotation.y))), float(args.get("pitch", "0")))
+	if args.has("stats"):
+		var v: PackedStringArray = str(args.stats).split(",")
+		var keys := ["health", "hunger", "thirst", "warmth"]
+		for i in mini(v.size(), keys.size()):
+			player.stats.set(keys[i], float(v[i]))
+	if args.has("nausea"):
+		player.stats.nausea_time = float(args.nausea)
+	if args.has("damage"):
+		player.take_damage.call_deferred(float(args.damage), "kurt")
 	if args.has("give") and player.has_method("debug_give"):
 		player.debug_give(str(args.give))
 	if args.has("shot"):
 		_capture.call_deferred(str(args.shot), int(args.get("frames", "45")))
+
+
+func _place_at_lake(world: Node, player: Player) -> void:
+	var gen: WorldGen = world.gen
+	var c := gen.lake_center
+	var dir := (Vector2(world.spawn_point.x, world.spawn_point.z) - c).normalized()
+	var p := c
+	for i in 200:
+		p = c + dir * (i * 0.5)
+		if gen.height_at(p.x, p.y) > 0.35:
+			break
+	var pos := Vector3(p.x, gen.height_at(p.x, p.y) + 0.1, p.y)
+	player.teleport(pos, rad_to_deg(atan2(dir.x, dir.y)), -35.0)
 
 
 func _capture(path: String, frames: int) -> void:

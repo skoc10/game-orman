@@ -1,6 +1,7 @@
 class_name Player
 extends CharacterBody3D
 ## Birinci şahıs oyuncu: yürüme, koşma, eğilme, zıplama, yüzme ve bakış.
+## Hayatta kalma değerleri SurvivalStats'ta, etkileşim Interaction düğümünde tutulur.
 
 signal landed(impact_speed: float)
 signal footstep
@@ -18,6 +19,10 @@ const GAMEPAD_LOOK_SPEED := 160.0
 @onready var interact_ray: RayCast3D = $Head/Camera3D/InteractRay
 @onready var _shape: CollisionShape3D = $CollisionShape3D
 
+var stats := SurvivalStats.new(Balance.d)
+var interaction: Interaction
+var rng := RandomNumberGenerator.new()
+
 var is_sprinting := false
 var is_crouching := false
 var is_swimming := false
@@ -32,11 +37,22 @@ var _bob_time := 0.0
 var _last_step_phase := 0
 var _air_speed := 0.0
 var _was_on_floor := true
+var _shake := 0.0
+var _warmth_timer := 0.0
+var _warmth_target := 80.0
 
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	camera.fov = float(GameState.settings.fov)
+	rng.randomize()
+	interaction = Interaction.new()
+	interaction.name = "Interaction"
+	interaction.player = self
+	add_child(interaction)
+	stats.damaged.connect(_on_damaged)
+	stats.died.connect(_on_died)
+	landed.connect(_on_landed)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -100,15 +116,108 @@ func _physics_process(delta: float) -> void:
 	_check_landing()
 	_keep_inside_island()
 	_head_bob(delta)
+	_update_stats(delta)
+	_camera_effects(delta)
 
 
-## Dayanıklılık sistemi (adım 3) bu iki fonksiyonu genişletir.
 func can_sprint() -> bool:
-	return true
+	return stats.can_sprint()
 
 
 func try_jump() -> bool:
-	return true
+	return stats.use_stamina(Balance.d.jump_stamina)
+
+
+func notify(text: String) -> void:
+	Events.notify.emit(text)
+
+
+func take_damage(amount: float, cause: String) -> void:
+	stats.damage(amount, cause)
+
+
+func drink_fresh_water() -> void:
+	var b := Balance.d
+	if stats.drink(b.lake_sip_thirst, b.raw_water_nausea_chance, b.raw_water_nausea_time, rng):
+		notify(tr("Kaynatılmamış su midene dokundu..."))
+
+
+func drink_sea_water() -> void:
+	stats.drink(Balance.d.sea_sip_thirst, 0.0, 0.0, rng)
+	notify(tr("Tuzlu su! Susuzluğun arttı."))
+
+
+## Isı kaynaklarının ("warmth_source" grubu) ve saatin belirlediği hedef ısı.
+func current_warmth_target() -> float:
+	return _warmth_target
+
+
+func _update_stats(delta: float) -> void:
+	_warmth_timer -= delta
+	if _warmth_timer <= 0.0:
+		_warmth_timer = 0.25
+		_warmth_target = _compute_warmth_target()
+	stats.tick(delta, {
+		"sprinting": is_sprinting and is_moving,
+		"swimming": is_swimming,
+		"warmth_target": _warmth_target,
+		"cold_resist": cold_resist(),
+	})
+
+
+func _compute_warmth_target() -> float:
+	var b := Balance.d
+	var target := TimeOfDay.ambient_warmth()
+	for source in get_tree().get_nodes_in_group("warmth_source"):
+		if source.has_method("warmth_for"):
+			target = maxf(target, source.warmth_for(global_position))
+	if is_swimming:
+		target = minf(target, b.water_warmth)
+	return target
+
+
+## Isı kaybı çarpanı; giysiler (adım 4) bunu düşürür.
+func cold_resist() -> float:
+	return 1.0
+
+
+func _on_landed(impact: float) -> void:
+	var b := Balance.d
+	if impact > b.fall_damage_speed and not is_swimming:
+		take_damage((impact - b.fall_damage_speed) * b.fall_damage_per_speed, "düşme")
+
+
+func _on_damaged(amount: float, _cause: String) -> void:
+	# Açlık gibi sürekli küçük hasarlar sarsıntı yapmaz, yalnızca darbeler.
+	if amount >= 1.0:
+		_shake = minf(_shake + amount * 0.02, 0.6)
+		Events.player_damaged.emit(amount)
+
+
+func _on_died(cause: String) -> void:
+	input_locked = true
+	is_sprinting = false
+	velocity = Vector3.ZERO
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	var tw := create_tween().set_parallel()
+	tw.tween_property(head, "position:y", 0.35, 1.2).set_ease(Tween.EASE_IN)
+	tw.tween_property(head, "rotation:z", deg_to_rad(70.0), 1.2).set_ease(Tween.EASE_IN)
+	Events.player_died.emit(cause)
+
+
+func _camera_effects(delta: float) -> void:
+	var offset := Vector3.ZERO
+	if _shake > 0.0:
+		_shake = maxf(0.0, _shake - delta * 1.5)
+		offset = Vector3(rng.randf_range(-1, 1), rng.randf_range(-1, 1), 0.0) * _shake * 0.08
+	if stats.is_nauseous() and not stats.dead:
+		var t := Time.get_ticks_msec() * 0.001
+		camera.rotation.z = sin(t * 1.3) * 0.03
+		offset.x += sin(t * 0.9) * 0.03
+	elif not stats.dead:
+		camera.rotation.z = lerpf(camera.rotation.z, 0.0, clampf(delta * 5.0, 0.0, 1.0))
+	camera.h_offset = offset.x
+	camera.v_offset = offset.y
 
 
 func teleport(pos: Vector3, yaw_deg := NAN, pitch_deg := NAN) -> void:

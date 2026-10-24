@@ -6,7 +6,7 @@ uniform vec4 shallow_color : source_color = vec4(0.22, 0.55, 0.58, 1.0);
 uniform vec4 deep_color : source_color = vec4(0.05, 0.18, 0.30, 1.0);
 uniform vec4 foam_color : source_color = vec4(0.85, 0.92, 0.95, 1.0);
 uniform float depth_fade = 3.5;
-uniform float foam_width = 0.35;
+uniform float foam_width = 0.18;
 // Gece suyu karartmak için DayNight tarafından ayarlanır.
 uniform float brightness = 1.0;
 uniform sampler2D depth_tex : hint_depth_texture, filter_linear_mipmap;
@@ -34,7 +34,7 @@ void fragment() {
 	float t = clamp(water_depth / depth_fade, 0.0, 1.0);
 	vec3 col = mix(shallow_color.rgb, deep_color.rgb, t);
 	float foam = 1.0 - smoothstep(0.0, foam_width, water_depth);
-	col = mix(col, foam_color.rgb, foam * 0.7);
+	col = mix(col, foam_color.rgb, foam * 0.5);
 
 	ALBEDO = col * brightness;
 	ALPHA = clamp(mix(0.55, 0.93, t) + foam * 0.3, 0.0, 1.0);
