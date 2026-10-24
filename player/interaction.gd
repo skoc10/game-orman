@@ -96,5 +96,8 @@ func _water_interaction() -> Dictionary:
 	if gen.height_at(p.x, p.z) > WorldGen.WATER_LEVEL - 0.05:
 		return {}
 	if gen.is_fresh_water(p.x, p.z):
+		var held := player.equipment.held_item()
+		if held and held.id in ["canteen", "water_raw", "water_clean"] and player.canteen_space() > 0:
+			return {"text": tr("Matarayı doldur"), "action": player.fill_canteen}
 		return {"text": tr("Su iç"), "hold": Balance.d.sip_time, "action": player.drink_fresh_water}
 	return {"text": tr("Deniz suyu iç (tuzlu)"), "hold": Balance.d.sip_time, "action": player.drink_sea_water}

@@ -106,3 +106,55 @@ func _count_pickups(id: String) -> int:
 		if c is Pickup and c.item_id == id and not c.is_queued_for_deletion():
 			n += 1
 	return n
+
+
+func test_campfire_cooks_boils_and_warms() -> void:
+	var fire: Node3D = load("res://buildables/campfire.tscn").instantiate()
+	world.dynamic_root.add_child(fire)
+	fire.global_position = player.global_position + Vector3(2, 0, 0)
+	assert_true(fire.is_burning())
+	assert_true(fire.is_in_group("persist_dynamic"))
+	assert_gt(fire.warmth_for(player.global_position), TimeOfDay.ambient_warmth() - 0.1)
+
+	var inv := player.inventory
+	inv.add("meat_raw", 1)
+	var info: Dictionary = fire.get_interaction(player, 0)
+	assert_string_contains(str(info.text), "pişir")
+	(info.action as Callable).call()
+	assert_eq(fire.cooking.state(0), "cooking")
+	fire.cooking.tick(Balance.d.cook_time + 1.0, true)
+	info = fire.get_interaction(player, 0)
+	(info.action as Callable).call()
+	assert_true(inv.has("meat_cooked"))
+
+	inv.add("pot", 1)
+	inv.add("water_raw", 2)
+	info = fire.get_interaction(player, 0)
+	assert_string_contains(str(info.text), "kaynat")
+	(info.action as Callable).call()
+	assert_false(inv.has("pot"), "kap ateşe konmalı")
+	fire.cooking.tick(Balance.d.boil_time + 1.0, true)
+	(fire.get_interaction(player, 0).action as Callable).call()
+	assert_eq(inv.count_of("water_clean"), 2)
+	assert_true(inv.has("pot"))
+
+	fire.fuel = 0.0
+	assert_false(fire.is_burning())
+	assert_eq(fire.warmth_for(player.global_position), -1.0)
+	inv.add("stick", 1)
+	(fire.get_interaction(player, 0).action as Callable).call()
+	assert_true(fire.is_burning(), "dal ekleyince ateş yeniden yanmalı")
+	fire.queue_free()
+
+
+func test_fill_canteen_respects_capacity() -> void:
+	var inv := player.inventory
+	inv.remove("water_raw", inv.count_of("water_raw"))
+	inv.remove("water_clean", inv.count_of("water_clean"))
+	inv.remove("canteen", inv.count_of("canteen"))
+	assert_eq(player.canteen_space(), 0)
+	inv.add("canteen", 1)
+	player.fill_canteen()
+	assert_eq(inv.count_of("water_raw"), Balance.d.canteen_capacity)
+	player.fill_canteen()
+	assert_eq(inv.count_of("water_raw"), Balance.d.canteen_capacity, "kapasite aşılmamalı")

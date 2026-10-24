@@ -54,6 +54,19 @@ func on_world_ready(world: Node) -> void:
 		player.take_damage.call_deferred(float(args.damage), "kurt")
 	if args.has("give") and player.has_method("debug_give"):
 		player.debug_give(str(args.give))
+	if args.has("campfire"):
+		var fire: Node3D = load("res://buildables/campfire.tscn").instantiate()
+		var fwd := -player.global_transform.basis.z
+		var fp := player.global_position + fwd * 3.5
+		fp.y = world.gen.height_at(fp.x, fp.z)
+		world.dynamic_root.add_child(fire)
+		fire.global_position = fp
+		if str(args.campfire) == "cook":
+			fire.cooking.add("meat_raw")
+			fire.cooking.add("meat_raw")
+			fire.cooking.tick(Balance.d.cook_time + 1.0, true)
+			fire.cooking.add("meat_raw")
+			fire.cooking.place_pot(3)
 	if args.has("inventory"):
 		world.get_node("InventoryScreen").open.call_deferred()
 	if args.has("select"):

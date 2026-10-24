@@ -166,6 +166,23 @@ func drink_fresh_water() -> void:
 		notify(tr("Kaynatılmamış su midene dokundu..."))
 
 
+## Mataralara sığacak kadar ham su ekler.
+func fill_canteen() -> void:
+	var n := canteen_space()
+	if n <= 0:
+		notify(tr("Mataran dolu.") if inventory.has("canteen") else tr("Su taşımak için matara gerekli."))
+		return
+	var left := inventory.add("water_raw", n)
+	if n - left > 0:
+		notify(tr("Matara dolduruldu (+%d yudum ham su)") % (n - left))
+
+
+## Mataralarda kaç yudumluk boş yer var.
+func canteen_space() -> int:
+	var capacity := inventory.count_of("canteen") * Balance.d.canteen_capacity
+	return maxi(0, capacity - inventory.count_of("water_raw") - inventory.count_of("water_clean"))
+
+
 func drink_sea_water() -> void:
 	stats.drink(Balance.d.sea_sip_thirst, 0.0, 0.0, rng)
 	notify(tr("Tuzlu su! Susuzluğun arttı."))
