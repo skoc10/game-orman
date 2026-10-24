@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://crafting/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = "mushroom_red"
+display_name = "Kırmızı mantar"
+description = "Parlak kırmızı şapkalı mantar. Yemesi riskli."
+category = 1
+max_stack = 10
+color = Color(0.8, 0.15, 0.12, 1)
+abbr = "KM"
+hunger = 4.0
+health = -10.0
+nausea_chance = 1.0
+nausea_duration = 60.0

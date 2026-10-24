@@ -20,7 +20,9 @@ const GAMEPAD_LOOK_SPEED := 160.0
 @onready var _shape: CollisionShape3D = $CollisionShape3D
 
 var stats := SurvivalStats.new(Balance.d)
+var inventory := Inventory.new()
 var interaction: Interaction
+var equipment: Equipment
 var rng := RandomNumberGenerator.new()
 
 var is_sprinting := false
@@ -50,6 +52,10 @@ func _ready() -> void:
 	interaction.name = "Interaction"
 	interaction.player = self
 	add_child(interaction)
+	equipment = Equipment.new()
+	equipment.name = "Equipment"
+	equipment.player = self
+	camera.add_child(equipment)
 	stats.damaged.connect(_on_damaged)
 	stats.died.connect(_on_died)
 	landed.connect(_on_landed)
@@ -132,6 +138,24 @@ func notify(text: String) -> void:
 	Events.notify.emit(text)
 
 
+## Envantere eşya ekler, bildirim gösterir ve sığmayan adedi döndürür.
+func give(id: String, count := 1, dur := -1.0) -> int:
+	var left := inventory.add(id, count, dur)
+	var got := count - left
+	if got > 0:
+		notify("+%d %s" % [got, ItemDB.display_name(id)])
+	if left > 0:
+		notify(tr("Envanter dolu!"))
+	return left
+
+
+## Hata ayıklama: "axe:1,stick:10" biçiminde eşya verir.
+func debug_give(spec: String) -> void:
+	for part in spec.split(","):
+		var kv := part.split(":")
+		inventory.add(kv[0], int(kv[1]) if kv.size() > 1 else 1)
+
+
 func take_damage(amount: float, cause: String) -> void:
 	stats.damage(amount, cause)
 
@@ -171,14 +195,16 @@ func _compute_warmth_target() -> float:
 	for source in get_tree().get_nodes_in_group("warmth_source"):
 		if source.has_method("warmth_for"):
 			target = maxf(target, source.warmth_for(global_position))
+	if equipment and equipment.has_light():
+		target = maxf(target, b.torch_warmth)
 	if is_swimming:
 		target = minf(target, b.water_warmth)
 	return target
 
 
-## Isı kaybı çarpanı; giysiler (adım 4) bunu düşürür.
+## Isı kaybı çarpanı; envanterdeki giysi bunu düşürür.
 func cold_resist() -> float:
-	return 1.0
+	return inventory.best_cold_resist()
 
 
 func _on_landed(impact: float) -> void:

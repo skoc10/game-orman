@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://crafting/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = "fiber"
+display_name = "Lif"
+description = "Uzun otlardan toplanır. İp ve bandaj yapılır."
+category = 0
+max_stack = 30
+color = Color(0.7, 0.72, 0.38, 1)
+abbr = "Lf"

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://crafting/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = "spear"
+display_name = "Mızrak"
+description = "Uzun menzilli silah. Sağ tıkla fırlatılabilir."
+category = 4
+max_stack = 1
+color = Color(0.66, 0.5, 0.3, 1)
+abbr = "Mz"
+damage = 28.0
+reach = 3.0
+durability = 60.0
+swing_time = 0.7
+throw_damage = 55.0

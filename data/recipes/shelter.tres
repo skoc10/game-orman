@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="RecipeData" format=3]
+
+[ext_resource type="Script" path="res://crafting/recipe_data.gd" id="1_recipe"]
+
+[resource]
+script = ExtResource("1_recipe")
+id = "shelter"
+display_name = "Dal barınak"
+description = "Uyuyup sabahı beklemek ve oyunu kaydetmek için. Geceleri ısı sağlar."
+ingredients = {
+"log": 4,
+"stick": 10,
+"rope": 2
+}
+result_id = ""
+result_count = 0
+is_build = true
+build_scene = "res://buildables/shelter.tscn"
+order = 11

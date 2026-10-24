@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://crafting/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = "knife"
+display_name = "Taş bıçak"
+description = "Avlanan hayvanı kesip et ve deri almak için gerekli."
+category = 3
+max_stack = 1
+color = Color(0.62, 0.62, 0.66, 1)
+abbr = "Bç"
+damage = 12.0
+reach = 1.8
+durability = 120.0
+swing_time = 0.4
+can_butcher = true

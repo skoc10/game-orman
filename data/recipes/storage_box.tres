@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="RecipeData" format=3]
+
+[ext_resource type="Script" path="res://crafting/recipe_data.gd" id="1_recipe"]
+
+[resource]
+script = ExtResource("1_recipe")
+id = "storage_box"
+display_name = "Saklama sandığı"
+description = "Eşyalarını saklamak için."
+ingredients = {
+"log": 3,
+"rope": 1
+}
+result_id = ""
+result_count = 0
+is_build = true
+build_scene = "res://buildables/storage_box.tscn"
+order = 12

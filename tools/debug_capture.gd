@@ -54,6 +54,10 @@ func on_world_ready(world: Node) -> void:
 		player.take_damage.call_deferred(float(args.damage), "kurt")
 	if args.has("give") and player.has_method("debug_give"):
 		player.debug_give(str(args.give))
+	if args.has("inventory"):
+		world.get_node("InventoryScreen").open.call_deferred()
+	if args.has("select"):
+		player.equipment.select(int(args.select))
 	if args.has("shot"):
 		_capture.call_deferred(str(args.shot), int(args.get("frames", "45")))
 

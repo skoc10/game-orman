@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="RecipeData" format=3]
+
+[ext_resource type="Script" path="res://crafting/recipe_data.gd" id="1_recipe"]
+
+[resource]
+script = ExtResource("1_recipe")
+id = "bandage"
+display_name = "Bitki bandajı"
+description = ""
+ingredients = {
+"fiber": 4
+}
+result_id = "bandage"
+result_count = 1
+is_build = false
+build_scene = ""
+order = 6

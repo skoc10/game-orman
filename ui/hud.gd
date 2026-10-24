@@ -18,6 +18,8 @@ var _notes: VBoxContainer
 var _vignette_mat: ShaderMaterial
 var _damage_flash := 0.0
 var _root: Control
+var _hotbar: Array[ItemSlotView] = []
+var _held_name: Label
 
 
 func _ready() -> void:
@@ -32,6 +34,7 @@ func _ready() -> void:
 	_build_stats()
 	_build_center()
 	_build_corner()
+	_build_hotbar()
 	Events.notify.connect(show_note)
 	Events.interaction_changed.connect(_on_interaction)
 	Events.player_damaged.connect(_on_damaged)
@@ -60,6 +63,11 @@ func _process(delta: float) -> void:
 	_status.text = "  ·  ".join(status)
 
 	_clock.text = tr("%d. Gün  %s") % [TimeOfDay.day, TimeOfDay.clock_text()]
+	var sel := player.equipment.selected if player.equipment else 0
+	for i in _hotbar.size():
+		_hotbar[i].set_data(player.inventory.get_slot(i), i == sel)
+	var held := player.inventory.slot_item(sel)
+	_held_name.text = held.display_name if held else ""
 	_warning.text = _warning_text(s)
 
 	_damage_flash = maxf(0.0, _damage_flash - delta * 1.6)
@@ -204,6 +212,29 @@ func _build_corner() -> void:
 	_clock.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_place(_clock, -24, 20, -24, 20)
 	_root.add_child(_clock)
+
+
+func _build_hotbar() -> void:
+	var box := VBoxContainer.new()
+	box.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	box.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	box.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	_place(box, -200, -20, 200, -20)
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_root.add_child(box)
+	_held_name = UITheme.label("", 16, UITheme.TEXT)
+	_held_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(_held_name)
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 6)
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(row)
+	for i in Inventory.HOTBAR:
+		var slot := ItemSlotView.new(i, 58, false)
+		slot.hotkey = str(i + 1)
+		row.add_child(slot)
+		_hotbar.append(slot)
 
 
 static func _place(c: Control, left: float, top: float, right: float, bottom: float) -> void:

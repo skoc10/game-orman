@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="RecipeData" format=3]
+
+[ext_resource type="Script" path="res://crafting/recipe_data.gd" id="1_recipe"]
+
+[resource]
+script = ExtResource("1_recipe")
+id = "rope"
+display_name = "İp"
+description = "Üç lifi örerek ip yap."
+ingredients = {
+"fiber": 3
+}
+result_id = "rope"
+result_count = 1
+is_build = false
+build_scene = ""
+order = 1

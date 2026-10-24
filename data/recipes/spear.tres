@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="RecipeData" format=3]
+
+[ext_resource type="Script" path="res://crafting/recipe_data.gd" id="1_recipe"]
+
+[resource]
+script = ExtResource("1_recipe")
+id = "spear"
+display_name = "Mızrak"
+description = ""
+ingredients = {
+"stick": 3,
+"stone": 1,
+"rope": 1
+}
+result_id = "spear"
+result_count = 1
+is_build = false
+build_scene = ""
+order = 4
