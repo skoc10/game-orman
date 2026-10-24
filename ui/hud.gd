@@ -18,6 +18,7 @@ var _notes: VBoxContainer
 var _vignette_mat: ShaderMaterial
 var _damage_flash := 0.0
 var _root: Control
+var _fade: ColorRect
 var _hotbar: Array[ItemSlotView] = []
 var _held_name: Label
 
@@ -35,6 +36,11 @@ func _ready() -> void:
 	_build_center()
 	_build_corner()
 	_build_hotbar()
+	_fade = ColorRect.new()
+	_fade.color = Color(0, 0, 0, 0)
+	_fade.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_fade)
 	Events.notify.connect(show_note)
 	Events.interaction_changed.connect(_on_interaction)
 	Events.player_damaged.connect(_on_damaged)
@@ -88,6 +94,13 @@ func show_note(text: String) -> void:
 	tw.tween_callback(l.queue_free)
 	while _notes.get_child_count() > 6:
 		_notes.get_child(0).free()
+
+
+## Ekranı karartır (1) ya da açar (0). Uyku geçişinde kullanılır.
+func fade_to(alpha: float, duration: float) -> Tween:
+	var tw := create_tween()
+	tw.tween_property(_fade, "color:a", alpha, duration)
+	return tw
 
 
 func set_visible_hud(v: bool) -> void:

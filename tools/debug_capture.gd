@@ -67,6 +67,14 @@ func on_world_ready(world: Node) -> void:
 			fire.cooking.tick(Balance.d.cook_time + 1.0, true)
 			fire.cooking.add("meat_raw")
 			fire.cooking.place_pot(3)
+	if args.has("place"):
+		var r := ItemDB.get_recipe(str(args.place))
+		var fwd := -player.global_transform.basis.z
+		var bp := player.global_position + fwd * 5.0
+		bp.y = world.gen.height_at(bp.x, bp.z)
+		BuildSystem.spawn(r, Transform3D(Basis(Vector3.UP, player.rotation.y + PI), bp))
+	if args.has("ghost"):
+		player.build.start(ItemDB.get_recipe(str(args.ghost)))
 	if args.has("inventory"):
 		world.get_node("InventoryScreen").open.call_deferred()
 	if args.has("select"):

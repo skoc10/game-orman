@@ -23,6 +23,7 @@ var stats := SurvivalStats.new(Balance.d)
 var inventory := Inventory.new()
 var interaction: Interaction
 var equipment: Equipment
+var build: BuildSystem
 var rng := RandomNumberGenerator.new()
 
 var is_sprinting := false
@@ -56,6 +57,10 @@ func _ready() -> void:
 	equipment.name = "Equipment"
 	equipment.player = self
 	camera.add_child(equipment)
+	build = BuildSystem.new()
+	build.name = "BuildSystem"
+	build.player = self
+	add_child(build)
 	stats.damaged.connect(_on_damaged)
 	stats.died.connect(_on_died)
 	landed.connect(_on_landed)
@@ -69,6 +74,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_look(Vector2(event.relative.x, event.relative.y) * sens)
 	elif event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		get_viewport().set_input_as_handled()
 
 
 func _process(delta: float) -> void:
@@ -261,6 +267,26 @@ func _camera_effects(delta: float) -> void:
 		camera.rotation.z = lerpf(camera.rotation.z, 0.0, clampf(delta * 5.0, 0.0, 1.0))
 	camera.h_offset = offset.x
 	camera.v_offset = offset.y
+
+
+func save_state() -> Dictionary:
+	return {
+		"pos": GameState.vec3_to_arr(global_position),
+		"yaw": rotation.y,
+		"pitch": head.rotation.x,
+		"stats": stats.to_dict(),
+		"inventory": inventory.to_array(),
+		"selected": equipment.selected,
+	}
+
+
+func load_state(d: Dictionary) -> void:
+	teleport(GameState.arr_to_vec3(d.get("pos"), global_position), rad_to_deg(float(d.get("yaw", 0.0))), rad_to_deg(float(d.get("pitch", 0.0))))
+	stats.from_dict(d.get("stats", {}))
+	if stats.health <= 0.0:
+		stats.health = 50.0
+	inventory.from_array(d.get("inventory", []))
+	equipment.select(int(d.get("selected", 0)))
 
 
 func teleport(pos: Vector3, yaw_deg := NAN, pitch_deg := NAN) -> void:

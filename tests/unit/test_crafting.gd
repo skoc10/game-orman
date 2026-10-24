@@ -58,3 +58,11 @@ func test_build_recipes_are_not_crafted() -> void:
 	inv.add("stick", 4)
 	assert_false(Crafting.craft(inv, ItemDB.get_recipe("campfire")))
 	assert_eq(inv.count_of("stone"), 4)
+
+
+func test_build_scenes_exist_and_are_buildables() -> void:
+	for r in ItemDB.build_recipes():
+		assert_true(ResourceLoader.exists(r.build_scene), "%s sahnesi yok" % r.id)
+		var b := (load(r.build_scene) as PackedScene).instantiate()
+		assert_true(b is Buildable, "%s Buildable olmalı" % r.id)
+		b.free()

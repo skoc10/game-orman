@@ -66,6 +66,26 @@ func skip_to(target_hour: float) -> void:
 	_set_hour(hour + hours)
 
 
+## Hedef saate ulaşmak için geçmesi gereken gerçek saniye (hız değişimleri dahil).
+func real_seconds_until(target_hour: float) -> float:
+	var h := hour
+	var remaining := fposmod(target_hour - h, 24.0)
+	var secs := 0.0
+	var guard := 0
+	while remaining > 0.0001 and guard < 8:
+		guard += 1
+		var night := h >= DUSK or h < DAWN
+		var rate := ((24.0 - DUSK + DAWN) / Balance.d.night_length_sec) if night else ((DUSK - DAWN) / Balance.d.day_length_sec)
+		var to_boundary := fposmod((DAWN if night else DUSK) - h, 24.0)
+		if to_boundary <= 0.0:
+			to_boundary = 24.0
+		var step := minf(remaining, to_boundary)
+		secs += step / rate
+		remaining -= step
+		h = fposmod(h + step, 24.0)
+	return secs
+
+
 ## 0 gece, 1 tam gündüz. Şafak ve alacakaranlıkta yumuşak geçiş yapar.
 func daylight() -> float:
 	var h := hour

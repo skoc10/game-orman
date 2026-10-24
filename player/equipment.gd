@@ -84,6 +84,8 @@ func _process(delta: float) -> void:
 
 	if player.input_locked or player.stats.dead or _busy:
 		return
+	if player.build and player.build.is_placing():
+		return
 	if Input.is_action_pressed("attack"):
 		use_primary()
 

@@ -62,6 +62,9 @@ func _ready() -> void:
 		var to_lake := Vector3(gen.lake_center.x, 0, gen.lake_center.y) - spawn_point
 		player.teleport(spawn_point + Vector3.UP * 0.2, rad_to_deg(atan2(-to_lake.x, -to_lake.z)))
 		_spawn_camp_loot()
+	else:
+		_apply_save(save)
+		GameState.pending_load = {}
 	print("Dünya hazır: tohum %d, %d ağaç, %d ms" % [seed_value, trees.count(), Time.get_ticks_msec() - started])
 
 	TimeOfDay.running = true
@@ -70,10 +73,106 @@ func _ready() -> void:
 		debug.on_world_ready(self)
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("quick_save") and not player.stats.dead:
+		if GameState.save_game():
+			player.notify(tr("Oyun kaydedildi."))
+
+
 func _exit_tree() -> void:
 	TimeOfDay.running = false
 	if GameState.world == self:
 		GameState.world = null
+
+
+# --- Kayıt ve yükleme ---
+
+func collect_save() -> Dictionary:
+	var dynamic := []
+	for node in get_tree().get_nodes_in_group("persist_dynamic"):
+		if node.is_queued_for_deletion() or not node.has_method("save_state"):
+			continue
+		dynamic.append(node.save_state())
+	return {
+		"seed": gen.seed_value,
+		"time": TimeOfDay.to_dict(),
+		"player": player.save_state(),
+		"trees": trees.felled_ids(),
+		"resources": resources.save_state(),
+		"dynamic": dynamic,
+	}
+
+
+func _apply_save(save: Dictionary) -> void:
+	TimeOfDay.from_dict(save.get("time", {}))
+	player.load_state(save.get("player", {}))
+	trees.apply_felled(save.get("trees", []))
+	resources.load_state(save.get("resources", {}))
+	for entry in save.get("dynamic", []):
+		if not entry is Dictionary:
+			continue
+		var pos := GameState.arr_to_vec3(entry.get("pos"))
+		var yaw := float(entry.get("yaw", 0.0))
+		match str(entry.get("type", "")):
+			"pickup":
+				spawn_pickup(str(entry.id), int(entry.count), pos, float(entry.get("dur", -1.0)), yaw)
+			"build":
+				var recipe := ItemDB.get_recipe(str(entry.get("recipe", "")))
+				if recipe:
+					BuildSystem.spawn(recipe, Transform3D(Basis(Vector3.UP, yaw), pos), entry)
+	player.notify(tr("Kayıt yüklendi: %d. gün") % TimeOfDay.day)
+
+
+# --- Uyku ---
+
+func is_sleep_time() -> bool:
+	return TimeOfDay.hour >= Balance.d.sleep_from_hour or TimeOfDay.hour < TimeOfDay.DAWN
+
+
+## Uyumayı engelleyen durum varsa açıklaması, yoksa boş metin.
+func sleep_block_reason(p: Player) -> String:
+	if p.stats.hunger < 15.0:
+		return tr("Uyuyamayacak kadar açsın.")
+	if p.stats.thirst < 15.0:
+		return tr("Uyuyamayacak kadar susadın.")
+	for threat in get_tree().get_nodes_in_group("hostile"):
+		if threat.has_method("is_threat") and threat.is_threat() \
+				and threat.global_position.distance_to(p.global_position) < Balance.d.sleep_danger_radius:
+			return tr("Yakında tehlike var, uyuyamazsın!")
+	return ""
+
+
+func sleep_until_morning() -> void:
+	if player.input_locked or not is_sleep_time() or sleep_block_reason(player) != "":
+		return
+	player.input_locked = true
+	var hud := get_node_or_null("HUD")
+	if hud:
+		await hud.fade_to(1.0, 1.2).finished
+	var secs := TimeOfDay.real_seconds_until(TimeOfDay.DAWN)
+	TimeOfDay.skip_to(TimeOfDay.DAWN)
+	for fire in get_tree().get_nodes_in_group("fire"):
+		fire.skip_time(secs)
+	get_tree().call_group("night_only", "on_morning_skip")
+	var b := Balance.d
+	var s := player.stats
+	s.hunger = maxf(0.0, s.hunger - b.sleep_hunger_cost)
+	s.thirst = maxf(0.0, s.thirst - b.sleep_thirst_cost)
+	s.heal(b.sleep_heal)
+	s.stamina = SurvivalStats.MAX
+	s.warmth = maxf(s.warmth, b.shelter_warmth)
+	GameState.save_game()
+	await get_tree().create_timer(0.5).timeout
+	if hud:
+		await hud.fade_to(0.0, 1.2).finished
+	player.input_locked = false
+	player.notify(tr("%d. gün başladı. Oyun kaydedildi.") % TimeOfDay.day)
+
+
+func rest_and_save() -> void:
+	player.stats.stamina = SurvivalStats.MAX
+	if GameState.save_game():
+		player.notify(tr("Dinlendin. Oyun kaydedildi."))
 
 
 func spawn_pickup(id: String, count: int, pos: Vector3, dur := -1.0, yaw := 0.0) -> Pickup:

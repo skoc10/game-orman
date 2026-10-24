@@ -53,6 +53,13 @@ func is_burning() -> bool:
 	return fuel > 0.0
 
 
+## Uyku gibi zaman atlamalarında ateşin o süre boyunca yanmasını uygular.
+func skip_time(seconds: float) -> void:
+	var burn := minf(maxf(fuel, 0.0), seconds)
+	cooking.tick(burn, true)
+	fuel = maxf(0.0, fuel - seconds)
+
+
 func add_fuel(seconds: float) -> void:
 	fuel = minf(Balance.d.fire_max_fuel, maxf(fuel, 0.0) + seconds)
 

@@ -8,7 +8,11 @@ var world: Node3D
 var player: Player
 
 
+const TEST_SAVE := "user://test_saves/world_flow.json"
+
+
 func before_all() -> void:
+	GameState.save_path = TEST_SAVE
 	GameState.pending_load = {}
 	GameState.new_game_seed = 42
 	world = WORLD.instantiate()
@@ -20,6 +24,8 @@ func before_all() -> void:
 func after_all() -> void:
 	world.queue_free()
 	await wait_frames(2)
+	GameState.delete_save()
+	GameState.save_path = GameState.SAVE_PATH
 
 
 func test_world_builds_with_everything() -> void:
@@ -158,3 +164,95 @@ func test_fill_canteen_respects_capacity() -> void:
 	assert_eq(inv.count_of("water_raw"), Balance.d.canteen_capacity)
 	player.fill_canteen()
 	assert_eq(inv.count_of("water_raw"), Balance.d.canteen_capacity, "kapasite aşılmamalı")
+
+
+func test_build_campfire_with_build_mode() -> void:
+	var inv := player.inventory
+	inv.add("stone", 4)
+	inv.add("stick", 4)
+	player.head.rotation.x = deg_to_rad(-45.0)
+	await wait_frames(1)
+	var before := _count_buildables()
+	player.build.start(ItemDB.get_recipe("campfire"))
+	assert_true(player.build.is_placing())
+	# Önce önizlemeyi uygun bir yere taşı: oyuncunun önü açık değilse etrafında döndür.
+	var placed := false
+	for i in 16:
+		player.rotation.y += TAU / 16.0
+		player.build._update_ghost()
+		if player.build.valid:
+			placed = player.build.place()
+			break
+	assert_true(placed, "kamp ateşi yerleştirilebilmeli: %s" % player.build.reason)
+	assert_false(player.build.is_placing())
+	await wait_frames(1)
+	assert_eq(_count_buildables(), before + 1)
+	player.head.rotation.x = 0.0
+
+
+func test_build_rejected_without_materials() -> void:
+	var inv := player.inventory
+	inv.remove("log", inv.count_of("log"))
+	player.head.rotation.x = deg_to_rad(-45.0)
+	player.build.start(ItemDB.get_recipe("shelter"))
+	player.build._update_ghost()
+	assert_false(player.build.valid)
+	assert_false(player.build.place())
+	player.build.cancel()
+	player.head.rotation.x = 0.0
+
+
+func test_sleep_skips_to_morning_and_saves() -> void:
+	TimeOfDay.hour = 22.0
+	var day := TimeOfDay.day
+	player.stats.hunger = 80.0
+	player.stats.thirst = 80.0
+	assert_true(world.is_sleep_time())
+	assert_eq(world.sleep_block_reason(player), "")
+	await world.sleep_until_morning()
+	assert_eq(TimeOfDay.day, day + 1)
+	assert_almost_eq(TimeOfDay.hour, 6.0, 0.05)
+	assert_almost_eq(player.stats.hunger, 80.0 - Balance.d.sleep_hunger_cost, 1.0)
+	assert_true(GameState.has_save())
+	assert_false(player.input_locked)
+
+
+func test_cannot_sleep_when_starving() -> void:
+	player.stats.hunger = 5.0
+	assert_ne(world.sleep_block_reason(player), "")
+	player.stats.hunger = 80.0
+
+
+func test_save_and_load_roundtrip() -> void:
+	player.inventory.add("rope", 2)
+	world.trees.fell(5, Vector3.FORWARD)
+	await wait_seconds(2.0)
+	var box := BuildSystem.spawn(ItemDB.get_recipe("storage_box"), Transform3D(Basis(), player.global_position + Vector3(3, 0, 3)))
+	box.inventory.add("mushroom", 4)
+	TimeOfDay.hour = 15.5
+	var data: Dictionary = JSON.parse_string(JSON.stringify(world.collect_save()))
+
+	GameState.pending_load = data
+	var loaded: Node3D = WORLD.instantiate()
+	world.process_mode = Node.PROCESS_MODE_DISABLED
+	add_child(loaded)
+	await wait_physics_frames(3)
+	assert_eq(loaded.gen.seed_value, world.gen.seed_value)
+	assert_true(loaded.trees.felled.has(5), "kesilen ağaç kayıttan gelmeli")
+	assert_eq(loaded.player.inventory.count_of("rope"), player.inventory.count_of("rope"))
+	assert_almost_eq(TimeOfDay.hour, 15.5, 0.1)
+	var boxes: Array = loaded.get_tree().get_nodes_in_group("buildable").filter(
+		func(n: Node) -> bool: return loaded.is_ancestor_of(n) and n.recipe_id == "storage_box")
+	assert_eq(boxes.size(), 1)
+	if boxes.size() == 1:
+		assert_eq(boxes[0].inventory.count_of("mushroom"), 4)
+	var logs: Array = loaded.dynamic_root.get_children().filter(func(n: Node) -> bool: return n is Pickup and n.item_id == "log")
+	assert_gt(logs.size(), 0, "yerdeki kütükler kayıttan gelmeli")
+	loaded.queue_free()
+	await wait_frames(2)
+	world.process_mode = Node.PROCESS_MODE_INHERIT
+	GameState.world = world
+
+
+func _count_buildables() -> int:
+	return get_tree().get_nodes_in_group("buildable").filter(func(n: Node) -> bool: return not n.is_queued_for_deletion()).size()

@@ -7,6 +7,8 @@ const SAVE_VERSION := 1
 const WORLD_SCENE := "res://world/world.tscn"
 const MENU_SCENE := "res://ui/main_menu.tscn"
 
+## Kayıt dosyası yolu; testler kendi yolunu kullanır.
+var save_path := SAVE_PATH
 ## Aktif dünya sahnesi (world.gd). Menüdeyken null.
 var world: Node = null
 ## Ana menüden "Devam" seçilince dünyaya aktarılan kayıt verisi.
@@ -25,11 +27,12 @@ func _ready() -> void:
 	load_settings()
 
 
-func has_save(path: String = SAVE_PATH) -> bool:
-	return FileAccess.file_exists(path)
+func has_save(path := "") -> bool:
+	return FileAccess.file_exists(_path(path))
 
 
-func write_save(data: Dictionary, path: String = SAVE_PATH) -> bool:
+func write_save(data: Dictionary, path := "") -> bool:
+	path = _path(path)
 	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	if file == null:
@@ -40,7 +43,8 @@ func write_save(data: Dictionary, path: String = SAVE_PATH) -> bool:
 	return true
 
 
-func read_save(path: String = SAVE_PATH) -> Dictionary:
+func read_save(path := "") -> Dictionary:
+	path = _path(path)
 	if not FileAccess.file_exists(path):
 		return {}
 	var json := JSON.new()
@@ -50,7 +54,8 @@ func read_save(path: String = SAVE_PATH) -> Dictionary:
 	return {}
 
 
-func delete_save(path: String = SAVE_PATH) -> void:
+func delete_save(path := "") -> void:
+	path = _path(path)
 	if FileAccess.file_exists(path):
 		DirAccess.remove_absolute(path)
 
@@ -106,6 +111,10 @@ func save_settings() -> void:
 func apply_settings() -> void:
 	var bus := AudioServer.get_bus_index("Master")
 	AudioServer.set_bus_volume_db(bus, linear_to_db(maxf(float(settings.master_volume), 0.0001)))
+
+
+func _path(path: String) -> String:
+	return path if path != "" else save_path
 
 
 func _change_scene(path: String) -> void:
