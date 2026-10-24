@@ -25,6 +25,7 @@ Balance="*res://autoload/balance.gd"
 ItemDB="*res://autoload/item_db.gd"
 TimeOfDay="*res://autoload/time_of_day.gd"
 GameState="*res://autoload/game_state.gd"
+DebugCapture="*res://tools/debug_capture.gd"
 
 [display]
 
