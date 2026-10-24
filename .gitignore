@@ -1,0 +1,11 @@
+# Godot
+.godot/
+export/
+*.translation
+
+# Asset indirme alanı (zip'ler buraya bırakılır, repoya girmez)
+assets/_incoming/
+
+# Sistem
+.DS_Store
+*.tmp
