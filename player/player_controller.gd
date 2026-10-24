@@ -34,6 +34,8 @@ var is_moving := false
 var debug_fly := false
 ## Menü ya da envanter açıkken hareket ve bakış durur.
 var input_locked := false
+## Hata ayıklama ekran görüntülerinde gerçek fare kamerayı oynatmasın diye kapatılır.
+var mouse_look := true
 
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity", 9.8)
 var _bob_time := 0.0
@@ -69,7 +71,7 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if input_locked:
 		return
-	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED and mouse_look:
 		var sens := float(GameState.settings.mouse_sensitivity)
 		_look(Vector2(event.relative.x, event.relative.y) * sens)
 	elif event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:

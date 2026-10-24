@@ -11,6 +11,7 @@ var terrain: IslandTerrain
 var trees: TreeField
 var vegetation: VegetationSpawner
 var resources: ResourceSpawner
+var animals: AnimalSpawner
 var day_night: DayNight
 ## Çalışma anında oluşan ve kayıtla saklanan nesneler (yerdeki eşyalar, yapılar).
 var dynamic_root: Node3D
@@ -52,6 +53,11 @@ func _ready() -> void:
 	add_child(dynamic_root)
 	_build_camp_props()
 
+	animals = AnimalSpawner.new()
+	animals.name = "Animals"
+	add_child(animals)
+	animals.setup(gen)
+
 	day_night = DayNight.new()
 	day_night.name = "DayNight"
 	add_child(day_night)
@@ -62,6 +68,7 @@ func _ready() -> void:
 		var to_lake := Vector3(gen.lake_center.x, 0, gen.lake_center.y) - spawn_point
 		player.teleport(spawn_point + Vector3.UP * 0.2, rad_to_deg(atan2(-to_lake.x, -to_lake.z)))
 		_spawn_camp_loot()
+		animals.populate(spawn_point)
 	else:
 		_apply_save(save)
 		GameState.pending_load = {}
@@ -120,6 +127,8 @@ func _apply_save(save: Dictionary) -> void:
 				var recipe := ItemDB.get_recipe(str(entry.get("recipe", "")))
 				if recipe:
 					BuildSystem.spawn(recipe, Transform3D(Basis(Vector3.UP, yaw), pos), entry)
+			"animal":
+				animals.restore(entry)
 	player.notify(tr("Kayıt yüklendi: %d. gün") % TimeOfDay.day)
 
 
@@ -153,7 +162,7 @@ func sleep_until_morning() -> void:
 	TimeOfDay.skip_to(TimeOfDay.DAWN)
 	for fire in get_tree().get_nodes_in_group("fire"):
 		fire.skip_time(secs)
-	get_tree().call_group("night_only", "on_morning_skip")
+	animals.on_morning_skip()
 	var b := Balance.d
 	var s := player.stats
 	s.hunger = maxf(0.0, s.hunger - b.sleep_hunger_cost)

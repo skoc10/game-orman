@@ -88,6 +88,8 @@ func _process(delta: float) -> void:
 		return
 	if Input.is_action_pressed("attack"):
 		use_primary()
+	elif Input.is_action_just_pressed("alt_action"):
+		use_secondary()
 
 
 func select(i: int) -> void:
@@ -115,6 +117,24 @@ func use_primary() -> void:
 	if item and item.category == ItemData.Category.CONTAINER:
 		return
 	_swing(item)
+
+
+## Sağ tık: fırlatılabilir silahı (mızrak) bakılan yöne atar.
+func use_secondary() -> void:
+	var item := held_item()
+	if item == null or item.throw_damage <= 0.0:
+		return
+	if not player.stats.use_stamina(Balance.d.swing_stamina * 1.5):
+		player.notify(tr("Fırlatmak için çok yorgunsun."))
+		return
+	var stack := player.inventory.take_from(selected, 1)
+	var spear := SpearProjectile.new()
+	spear.damage = item.throw_damage
+	spear.durability = float(stack.get("dur", item.durability))
+	spear.thrower = player
+	spear.velocity = player.look_direction() * 24.0 + Vector3.UP * 1.5
+	player.get_parent().add_child(spear)
+	spear.global_position = player.camera.global_position + player.look_direction() * 0.6
 
 
 func _consume(item: ItemData) -> void:

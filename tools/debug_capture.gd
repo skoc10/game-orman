@@ -29,6 +29,8 @@ func on_world_ready(world: Node) -> void:
 	if args.has("timescale"):
 		TimeOfDay.time_scale = float(args.timescale)
 	var player: Player = world.player
+	if args.has("shot"):
+		player.mouse_look = false
 	if args.has("pos") or args.has("height"):
 		var p := player.global_position
 		if args.has("pos"):
@@ -67,6 +69,20 @@ func on_world_ready(world: Node) -> void:
 			fire.cooking.tick(Balance.d.cook_time + 1.0, true)
 			fire.cooking.add("meat_raw")
 			fire.cooking.place_pot(3)
+	if args.has("animal"):
+		# --animal=wolf:3 ya da deer:2 — oyuncunun önüne yerleştirir.
+		var kv: PackedStringArray = str(args.animal).split(":")
+		var n := int(kv[1]) if kv.size() > 1 else 1
+		var fwd2 := -player.global_transform.basis.z
+		for i in n:
+			var ap: Vector3 = player.global_position + fwd2 * (7.0 + i * 1.5) + player.global_transform.basis.x * (i - n * 0.5) * 1.6
+			ap.y = world.gen.height_at(ap.x, ap.z) + 0.1
+			var a: AnimalBase = world.animals.spawn_animal(kv[0], ap)
+			a.rotation.y = player.rotation.y
+	if args.has("kill"):
+		for a in world.get_tree().get_nodes_in_group("animal"):
+			if a.global_position.distance_to(player.global_position) < 15.0:
+				a.take_hit.call_deferred(999.0, player)
 	if args.has("place"):
 		var r := ItemDB.get_recipe(str(args.place))
 		var fwd := -player.global_transform.basis.z
@@ -104,6 +120,13 @@ func _capture(path: String, frames: int) -> void:
 	if world:
 		var pp: Vector3 = world.player.global_position
 		print("Oyuncu: %s, zemin: %.2f, FPS: %d" % [pp, world.gen.height_at(pp.x, pp.z), Engine.get_frames_per_second()])
+		if args.has("verbose"):
+			var vc := get_viewport().get_camera_3d()
+			print("Aktif kamera: ", vc.get_path(), " açı: ", vc.global_rotation_degrees, " konum: ", vc.global_position)
+			print("Kamera açısı: ", world.player.camera.global_rotation_degrees, " baş: ", world.player.head.rotation_degrees, " gövde: ", world.player.rotation_degrees)
+			for a in world.get_tree().get_nodes_in_group("animal"):
+				if a.global_position.distance_to(pp) < 40.0:
+					print("  %s %s durum=%s mesafe=%.1f" % [a.species, a.global_position, AnimalBase.State.keys()[a.state], a.global_position.distance_to(pp)])
 	var img := get_viewport().get_texture().get_image()
 	var abs_path := ProjectSettings.globalize_path(path)
 	DirAccess.make_dir_recursive_absolute(abs_path.get_base_dir())
