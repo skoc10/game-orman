@@ -112,7 +112,7 @@ func think(delta: float, player: Player, dist: float) -> void:
 				set_state(State.CHASE)
 			elif _bite_cd <= 0.0:
 				_bite(player)
-				if keep > 0.0 and _bites >= 1:
+				if (keep > 0.0 and _bites >= 1) or rng.randf() < Balance.d.wolf_retreat_after_bite:
 					_start_stalk()
 		State.RETREAT:
 			move_to(_target, run_speed)
@@ -187,6 +187,14 @@ func _follow_or_wander(delta: float) -> void:
 			stop()
 		return
 	wander(delta)
+
+
+func model_files() -> Array:
+	return ["Wolf.gltf", "Wolf.glb"]
+
+
+func model_height() -> float:
+	return 1.05
 
 
 func _build_model() -> Node3D:

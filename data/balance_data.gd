@@ -49,9 +49,10 @@ extends Resource
 @export var tired_regen_mult := 0.4
 
 @export_group("Isı")
-@export var warmth_loss_per_sec := 0.35
+## Açıkta 80 ısıdan 0'a yaklaşık 4,5 dakikada iner (gece 8 dakika sürer).
+@export var warmth_loss_per_sec := 0.3
 @export var warmth_gain_per_sec := 3.0
-@export var freeze_damage := 0.5
+@export var freeze_damage := 0.3
 @export var day_warmth := 80.0
 @export var night_warmth := 5.0
 @export var fire_warmth := 100.0
@@ -94,6 +95,8 @@ extends Resource
 @export var day_wolf_packs := 1
 @export var night_wolf_packs := 2
 @export var max_wolves := 7
-@export var wolf_bite_damage := 12.0
+@export var wolf_bite_damage := 9.0
+## Isırdıktan sonra geri çekilip yeniden dönme olasılığı (vur-kaç).
+@export var wolf_retreat_after_bite := 0.4
 @export var fire_fear_radius := 10.0
 @export var torch_fear_radius := 6.0

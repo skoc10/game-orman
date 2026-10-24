@@ -24,6 +24,8 @@ var wander_radius := 30.0
 var died_day := -1
 
 var model: Node3D
+## Dışarıdan yüklenen animasyonlu model; yoksa yer tutucu kullanılır.
+var ext: AnimalModel
 var rng := RandomNumberGenerator.new()
 
 var _legs: Array[Node3D] = []
@@ -51,7 +53,8 @@ func _ready() -> void:
 	if health < 0.0:
 		health = max_health
 	_build_shape()
-	model = _build_model()
+	ext = AnimalModel.try_load(model_files(), model_height())
+	model = ext.root if ext else _build_model()
 	add_child(model)
 	if home == Vector3.ZERO:
 		home = global_position
@@ -72,6 +75,16 @@ func think(_delta: float, _player: Player, _dist: float) -> void:
 ## Türün tepkisi: hasar alınca.
 func on_hurt(_attacker: Node3D) -> void:
 	pass
+
+
+## assets/models/animals altında aranacak model dosyaları.
+func model_files() -> Array:
+	return []
+
+
+## Dış modelin ölçekleneceği boy (m).
+func model_height() -> float:
+	return 1.5
 
 
 ## Türün görünümü (yer tutucu). Bacak pivotları _legs dizisine eklenir.
@@ -280,6 +293,20 @@ func _far_update(delta: float) -> void:
 
 func _animate(delta: float) -> void:
 	var speed := Vector2(velocity.x, velocity.z).length()
+	if ext:
+		if state == State.ATTACK and ext.has_anim("attack"):
+			ext.play("attack")
+		elif speed > run_speed * 0.55 and ext.has_anim("run"):
+			ext.play("run", clampf(speed / run_speed, 0.6, 1.4))
+		elif speed > 0.3:
+			ext.play("walk", clampf(speed / maxf(walk_speed, 0.1), 0.6, 1.6))
+		elif state == State.IDLE and ext.has_anim("eat") and species == "deer":
+			ext.play("eat")
+		else:
+			ext.play("idle")
+		_flash = maxf(0.0, _flash - delta * 4.0)
+		model.scale = Vector3.ONE * (1.0 + _flash * 0.08)
+		return
 	_anim_t += delta * (2.0 + speed * 2.2)
 	var amp := clampf(speed / maxf(run_speed, 0.1), 0.0, 1.0) * 0.7 + (0.15 if speed > 0.2 else 0.0)
 	for i in _legs.size():
@@ -302,6 +329,12 @@ func _become_corpse(animate: bool) -> void:
 	add_to_group("corpse")
 	for leg in _legs:
 		leg.rotation.x = 0.0
+	if ext and ext.has_anim("death"):
+		if animate:
+			ext.play("death")
+		else:
+			ext.hold_last.call_deferred("death")
+		return
 	if animate:
 		var tw := create_tween().set_parallel()
 		tw.tween_property(model, "rotation:z", PI * 0.5, 0.6).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)

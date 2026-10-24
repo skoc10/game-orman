@@ -12,6 +12,7 @@ var trees: TreeField
 var vegetation: VegetationSpawner
 var resources: ResourceSpawner
 var animals: AnimalSpawner
+var hints: Hints
 var day_night: DayNight
 ## Çalışma anında oluşan ve kayıtla saklanan nesneler (yerdeki eşyalar, yapılar).
 var dynamic_root: Node3D
@@ -57,6 +58,10 @@ func _ready() -> void:
 	animals.name = "Animals"
 	add_child(animals)
 	animals.setup(gen)
+
+	hints = Hints.new()
+	hints.name = "Hints"
+	add_child(hints)
 
 	var ambience := Ambience.new()
 	ambience.name = "Ambience"
@@ -111,6 +116,7 @@ func collect_save() -> Dictionary:
 		"trees": trees.felled_ids(),
 		"resources": resources.save_state(),
 		"dynamic": dynamic,
+		"hints": hints.save_state(),
 	}
 
 
@@ -119,6 +125,7 @@ func _apply_save(save: Dictionary) -> void:
 	player.load_state(save.get("player", {}))
 	trees.apply_felled(save.get("trees", []))
 	resources.load_state(save.get("resources", {}))
+	hints.load_state(save.get("hints", []))
 	for entry in save.get("dynamic", []):
 		if not entry is Dictionary:
 			continue

@@ -41,6 +41,10 @@ func on_world_ready(world: Node) -> void:
 	var player: Player = world.player
 	if args.has("shot"):
 		player.mouse_look = false
+		if not args.has("hints"):
+			world.hints.set_process(false)
+	if args.has("novsync"):
+		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 	if args.has("pos") or args.has("height"):
 		var p := player.global_position
 		if args.has("pos"):
@@ -127,6 +131,18 @@ func _place_at_lake(world: Node, player: Player) -> void:
 func _capture(path: String, frames: int) -> void:
 	for i in frames:
 		await get_tree().process_frame
+	if args.has("fpsprobe"):
+		var start := Time.get_ticks_usec()
+		var n := 0
+		var worst := 0.0
+		var last := start
+		while Time.get_ticks_usec() - start < 4_000_000:
+			await get_tree().process_frame
+			var now := Time.get_ticks_usec()
+			worst = maxf(worst, (now - last) / 1000.0)
+			last = now
+			n += 1
+		print("FPS ölçümü: ortalama %.1f, en yavaş kare %.1f ms" % [n / ((Time.get_ticks_usec() - start) / 1_000_000.0), worst])
 	await RenderingServer.frame_post_draw
 	var world := GameState.world
 	if world:

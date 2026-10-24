@@ -19,6 +19,9 @@ var _vignette_mat: ShaderMaterial
 var _damage_flash := 0.0
 var _root: Control
 var _fade: ColorRect
+var _hint_panel: PanelContainer
+var _hint_label: Label
+var _hint_tween: Tween
 var _hotbar: Array[ItemSlotView] = []
 var _held_name: Label
 
@@ -41,6 +44,8 @@ func _ready() -> void:
 	_fade.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_fade)
+	_build_hint()
+	Events.hint.connect(show_hint)
 	Events.notify.connect(show_note)
 	Events.interaction_changed.connect(_on_interaction)
 	Events.player_damaged.connect(_on_damaged)
@@ -101,6 +106,33 @@ func fade_to(alpha: float, duration: float) -> Tween:
 	var tw := create_tween()
 	tw.tween_property(_fade, "color:a", alpha, duration)
 	return tw
+
+
+func show_hint(text: String) -> void:
+	_hint_label.text = text
+	_hint_panel.visible = true
+	_hint_panel.modulate.a = 0.0
+	if _hint_tween:
+		_hint_tween.kill()
+	_hint_tween = create_tween()
+	_hint_tween.tween_property(_hint_panel, "modulate:a", 1.0, 0.4)
+	_hint_tween.tween_interval(9.0)
+	_hint_tween.tween_property(_hint_panel, "modulate:a", 0.0, 0.8)
+	_hint_tween.tween_callback(func() -> void: _hint_panel.visible = false)
+
+
+func _build_hint() -> void:
+	_hint_panel = PanelContainer.new()
+	_hint_panel.add_theme_stylebox_override("panel", UITheme.panel_box(Color(0.05, 0.08, 0.05, 0.75), 8, 14, UITheme.ACCENT.darkened(0.3)))
+	_hint_panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	_place(_hint_panel, 24, 24, 24, 24)
+	_hint_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hint_panel.visible = false
+	_root.add_child(_hint_panel)
+	_hint_label = UITheme.label("", 17)
+	_hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_hint_label.custom_minimum_size.x = 460
+	_hint_panel.add_child(_hint_label)
 
 
 func set_visible_hud(v: bool) -> void:

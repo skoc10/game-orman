@@ -7,6 +7,8 @@ signal notify(text: String)
 signal player_damaged(amount: float)
 signal player_died(cause: String)
 signal game_saved
+## Yeni oyuncu ipucu: sol üstte bir süre görünür.
+signal hint(text: String)
 ## Oyuncunun baktığı nesne için etkileşim ipucu. Boş metin ipucunu gizler.
 ## progress 0..1 arası basılı tutma ilerlemesidir, -1 ise çubuk gösterilmez.
 signal interaction_changed(text: String, progress: float)

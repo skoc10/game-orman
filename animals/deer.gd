@@ -88,6 +88,14 @@ func on_hurt(attacker: Node3D) -> void:
 			other.flee_from(from)
 
 
+func model_files() -> Array:
+	return ["Stag.gltf", "Stag.glb"] if is_stag else ["Deer.gltf", "Deer.glb"]
+
+
+func model_height() -> float:
+	return 2.1 if is_stag else 1.7
+
+
 func save_state() -> Dictionary:
 	var d := super.save_state()
 	d["stag"] = is_stag
