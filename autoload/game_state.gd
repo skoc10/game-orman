@@ -20,6 +20,7 @@ var settings := {
 	"mouse_sensitivity": 0.25,
 	"fov": 75.0,
 	"master_volume": 0.8,
+	"fullscreen": false,
 }
 
 
@@ -111,6 +112,12 @@ func save_settings() -> void:
 func apply_settings() -> void:
 	var bus := AudioServer.get_bus_index("Master")
 	AudioServer.set_bus_volume_db(bus, linear_to_db(maxf(float(settings.master_volume), 0.0001)))
+	if DisplayServer.get_name() != "headless":
+		var want := DisplayServer.WINDOW_MODE_FULLSCREEN if bool(settings.fullscreen) else DisplayServer.WINDOW_MODE_WINDOWED
+		if DisplayServer.window_get_mode() != want and not (want == DisplayServer.WINDOW_MODE_WINDOWED and DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_MAXIMIZED):
+			DisplayServer.window_set_mode(want)
+	if world and world.player:
+		world.player.camera.fov = float(settings.fov)
 
 
 func _path(path: String) -> String:

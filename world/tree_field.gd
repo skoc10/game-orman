@@ -170,6 +170,7 @@ func hit(id: int, power: float, from: Vector3) -> void:
 ## sonra kütük ve dal bırakır.
 func fell(id: int, dir: Vector3) -> void:
 	_remove(id)
+	Sfx.play_at("tree_fall", positions[id] + Vector3.UP * 2.0, 2.0, 90.0, 0.1)
 	var falling := MeshInstance3D.new()
 	falling.mesh = _meshes[kinds[id]]
 	add_child(falling)

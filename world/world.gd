@@ -58,6 +58,10 @@ func _ready() -> void:
 	add_child(animals)
 	animals.setup(gen)
 
+	var ambience := Ambience.new()
+	ambience.name = "Ambience"
+	add_child(ambience)
+
 	day_night = DayNight.new()
 	day_night.name = "DayNight"
 	add_child(day_night)

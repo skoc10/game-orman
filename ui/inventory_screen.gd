@@ -89,6 +89,7 @@ func _use(index: int) -> void:
 	if item.is_consumable():
 		var sick := player.stats.consume(item, player.rng)
 		player.inventory.take_from(index, 1)
+		Sfx.play("drink" if item.category == ItemData.Category.DRINK else "eat", -8.0)
 		player.notify("%s %s" % [item.display_name, tr("içtin") if item.category == ItemData.Category.DRINK else tr("yedin")])
 		if sick:
 			player.notify(tr("Midem bulanıyor..."))
@@ -181,6 +182,7 @@ func _build_recipes() -> void:
 func _craft(recipe: RecipeData) -> void:
 	if Crafting.craft(player.inventory, recipe):
 		player.notify(tr("Üretildi: %s") % recipe.display_name)
+		Sfx.play("craft", -8.0)
 	else:
 		player.notify(tr("Envanterde yer yok."))
 

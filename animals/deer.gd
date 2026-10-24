@@ -73,6 +73,8 @@ func perception_radius(player: Player) -> float:
 func flee_from(pos: Vector3) -> void:
 	_threat = pos
 	if state != State.FLEE:
+		if state != State.DEAD:
+			Sfx.play_at("deer_alarm", global_position + Vector3.UP, -2.0, 45.0, 0.15)
 		set_state(State.FLEE)
 	else:
 		_state_time = 0.0

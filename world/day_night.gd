@@ -20,6 +20,8 @@ var moon: DirectionalLight3D
 var sky_mat: ShaderMaterial
 ## Su malzemesi; gece kararması için world.gd tarafından atanır.
 var water_mat: ShaderMaterial
+## Sis yoğunluğu çarpanı (ana menü manzarası için düşürülür).
+var fog_scale := 1.0
 
 
 func _ready() -> void:
@@ -105,6 +107,6 @@ func update_now() -> void:
 	env.ambient_light_color = NIGHT_AMBIENT.lerp(DAY_AMBIENT, dl)
 	env.ambient_light_energy = lerpf(0.26, 0.6, dl)
 	env.fog_light_color = horizon.lerp(top, 0.3)
-	env.fog_density = lerpf(0.012, 0.0025, dl)
+	env.fog_density = lerpf(0.012, 0.0025, dl) * fog_scale
 	if water_mat:
 		water_mat.set_shader_parameter("brightness", lerpf(0.22, 1.0, dl))

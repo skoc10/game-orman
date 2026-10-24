@@ -21,6 +21,16 @@ func _ready() -> void:
 		GameState.new_game_seed = int(args.seed)
 
 
+## Komut satırında dünya argümanı varsa menü atlanır.
+func wants_world() -> bool:
+	return not args.is_empty() and not args.has("menu")
+
+
+func on_menu_ready(_menu: Node) -> void:
+	if args.has("shot"):
+		_capture.call_deferred(str(args.shot), int(args.get("frames", "45")))
+
+
 func on_world_ready(world: Node) -> void:
 	if args.is_empty():
 		return
@@ -93,6 +103,8 @@ func on_world_ready(world: Node) -> void:
 		player.build.start(ItemDB.get_recipe(str(args.ghost)))
 	if args.has("inventory"):
 		world.get_node("InventoryScreen").open.call_deferred()
+	if args.has("pause"):
+		world.get_node("PauseMenu").open.call_deferred()
 	if args.has("select"):
 		player.equipment.select(int(args.select))
 	if args.has("shot"):

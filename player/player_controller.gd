@@ -66,6 +66,7 @@ func _ready() -> void:
 	stats.damaged.connect(_on_damaged)
 	stats.died.connect(_on_died)
 	landed.connect(_on_landed)
+	footstep.connect(_on_footstep)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -98,7 +99,10 @@ func _physics_process(delta: float) -> void:
 		_fly(delta, wish)
 		return
 
+	var was_swimming := is_swimming
 	is_swimming = global_position.y < WorldGen.WATER_LEVEL - SWIM_DEPTH
+	if is_swimming and not was_swimming:
+		Sfx.play("splash", -6.0)
 	_update_crouch(delta, not input_locked and Input.is_action_pressed("crouch") and not is_swimming)
 	is_sprinting = not input_locked and Input.is_action_pressed("sprint") and input.y < -0.1 \
 		and not is_crouching and not is_swimming and can_sprint()
@@ -152,6 +156,7 @@ func give(id: String, count := 1, dur := -1.0) -> int:
 	var got := count - left
 	if got > 0:
 		notify("+%d %s" % [got, ItemDB.display_name(id)])
+		Sfx.play("pickup", -16.0, 0.15)
 	if left > 0:
 		notify(tr("Envanter dolu!"))
 	return left
@@ -232,7 +237,14 @@ func cold_resist() -> float:
 	return inventory.best_cold_resist()
 
 
+func _on_footstep() -> void:
+	var vol := -20.0 if is_crouching else (-11.0 if is_sprinting else -15.0)
+	Sfx.play("footstep_%d" % (randi() % 4), vol, 0.12)
+
+
 func _on_landed(impact: float) -> void:
+	if impact > 4.0:
+		Sfx.play("footstep_%d" % (randi() % 4), -6.0, 0.05)
 	var b := Balance.d
 	if impact > b.fall_damage_speed and not is_swimming:
 		take_damage((impact - b.fall_damage_speed) * b.fall_damage_per_speed, "düşme")
@@ -242,6 +254,7 @@ func _on_damaged(amount: float, _cause: String) -> void:
 	# Açlık gibi sürekli küçük hasarlar sarsıntı yapmaz, yalnızca darbeler.
 	if amount >= 1.0:
 		_shake = minf(_shake + amount * 0.02, 0.6)
+		Sfx.play("hit_flesh", -4.0)
 		Events.player_damaged.emit(amount)
 
 

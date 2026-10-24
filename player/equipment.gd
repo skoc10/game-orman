@@ -141,6 +141,7 @@ func _consume(item: ItemData) -> void:
 	_eat_cooldown = 0.6
 	var sick := player.stats.consume(item, player.rng)
 	player.inventory.take_from(selected, 1)
+	Sfx.play("drink" if item.category == ItemData.Category.DRINK else "eat", -8.0)
 	var verb := tr("içtin") if item.category == ItemData.Category.DRINK else (tr("kullandın") if item.category == ItemData.Category.MEDICAL else tr("yedin"))
 	player.notify("%s %s" % [item.display_name, verb])
 	if sick:
@@ -159,6 +160,7 @@ func _swing(item: ItemData) -> void:
 		damage *= 0.5
 		t *= 1.3
 	var tw := create_tween()
+	tw.tween_callback(Sfx.play.bind("swing", -14.0, 0.15)).set_delay(t * 0.3)
 	tw.tween_property(_pivot, "rotation", WINDUP_ROT, t * 0.35).set_trans(Tween.TRANS_SINE)
 	tw.tween_property(_pivot, "rotation", STRIKE_ROT, t * 0.2).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tw.tween_callback(_strike.bind(item, damage, weak))
@@ -179,13 +181,16 @@ func _strike(item: ItemData, damage: float, weak: bool) -> void:
 	if col.has_method("take_tree_hit"):
 		if item and item.chop_power > 0.0:
 			col.take_tree_hit(hit.shape, item.chop_power * (0.5 if weak else 1.0), player)
+			Sfx.play_at("chop", hit.position, -2.0, 50.0)
 			_wear()
 		else:
 			player.notify(tr("Ağaç kesmek için balta gerekli."))
 	elif col.has_method("take_hit"):
 		col.take_hit(damage, player)
+		Sfx.play_at("hit_flesh", hit.position, 0.0, 30.0)
 		_wear()
 	else:
+		Sfx.play_at("chop", hit.position, -12.0, 20.0, 0.2)
 		Effects.burst(player.get_parent(), hit.position, Color(0.5, 0.48, 0.45), 5, 1.5)
 
 

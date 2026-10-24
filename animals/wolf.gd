@@ -39,6 +39,12 @@ func _ready() -> void:
 	_offset = Vector3(rng.randf_range(-3, 3), 0, rng.randf_range(-3, 3))
 
 
+func set_state(s: State) -> void:
+	if s == State.CHASE and state != State.CHASE and is_inside_tree():
+		Sfx.play_at("wolf_growl", global_position + Vector3.UP * 0.7, 0.0, 35.0, 0.15)
+	super.set_state(s)
+
+
 func is_threat() -> bool:
 	return is_alive() and state != State.RETREAT
 
@@ -160,6 +166,7 @@ func _bite(player: Player) -> void:
 	_bites += 1
 	var dmg := Balance.d.wolf_bite_damage * (1.2 if TimeOfDay.is_night() else 1.0)
 	player.take_damage(dmg, "kurt")
+	Sfx.play_at("bite", global_position + Vector3.UP * 0.7, 0.0, 30.0)
 	var push := player.global_position - global_position
 	push.y = 0.0
 	player.velocity += push.normalized() * 3.0 + Vector3.UP * 1.5

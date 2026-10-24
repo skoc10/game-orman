@@ -77,6 +77,7 @@ func place() -> bool:
 		player.notify(tr("Malzemeler yetersiz."))
 		return false
 	var built := spawn(recipe, ghost.global_transform)
+	Sfx.play_at("craft", ghost.global_position, -2.0, 30.0)
 	player.notify(tr("İnşa edildi: %s") % recipe.display_name)
 	cancel()
 	return built != null

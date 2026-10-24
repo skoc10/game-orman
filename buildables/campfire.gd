@@ -16,6 +16,7 @@ var _smoke: CPUParticles3D
 var _pot_mesh: MeshInstance3D
 var _food: Array[MeshInstance3D] = []
 var _food_ids: Array[String] = ["", "", ""]
+var _sound: AudioStreamPlayer3D
 
 
 func _ready() -> void:
@@ -38,6 +39,7 @@ func _ready() -> void:
 	add_child(shape)
 	if fuel < 0.0:
 		fuel = Balance.d.fire_start_fuel
+	_sound = Sfx.attach_loop("fire_loop", self, -4.0, 22.0)
 	_update_visuals(0.0)
 
 
@@ -47,6 +49,11 @@ func _process(delta: float) -> void:
 		fuel = maxf(0.0, fuel - delta)
 	cooking.tick(delta, burning)
 	_update_visuals(delta)
+
+
+func _exit_tree() -> void:
+	if _sound:
+		_sound.stop()
 
 
 func is_burning() -> bool:
@@ -147,6 +154,7 @@ func _add_fuel(player: Player, id: String) -> void:
 	if player.inventory.remove(id, 1):
 		var was_out := not is_burning()
 		add_fuel(item.fuel)
+		Sfx.play_at("ignite" if was_out else "craft", global_position, -4.0, 25.0)
 		player.notify(tr("Ateş yandı.") if was_out else tr("+%d sn yakıt") % int(item.fuel))
 
 
@@ -292,3 +300,8 @@ func _update_visuals(_delta: float) -> void:
 			if id != "":
 				_food[i].mesh = MeshFactory.item_mesh(id)
 	_pot_mesh.visible = cooking.has_pot
+	if _sound:
+		if burning and not _sound.playing:
+			_sound.play()
+		elif not burning and _sound.playing:
+			_sound.stop()
