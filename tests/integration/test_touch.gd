@@ -29,6 +29,7 @@ func after_all() -> void:
 	GameState.settings.touch_controls = _saved_touch
 	GameState.save_path = GameState.SAVE_PATH
 	InputSetup._enter_tree()
+	GameState.apply_ui_scale()
 
 
 func _screen() -> Vector2:
@@ -103,7 +104,9 @@ func test_drag_right_side_turns_camera() -> void:
 	_tap(p, 3, true)
 	_drag(p + Vector2(120, 0), Vector2(120, 0), 3)
 	_tap(p + Vector2(120, 0), 3, false)
+	await wait_seconds(0.4)
 	assert_ne(player.rotation.y, yaw, "sürükleyince bakış dönmeli")
+	assert_lt(touch._look_pending.length(), 1.0, "yumuşatılan bakış birkaç karede tamamlanmalı")
 
 
 func test_hidden_while_inventory_open() -> void:
@@ -113,3 +116,37 @@ func test_hidden_while_inventory_open() -> void:
 	world.get_node("InventoryScreen").close()
 	await wait_process_frames(2)
 	assert_true(touch._is_active())
+
+
+func test_ui_is_scaled_up_for_touch() -> void:
+	assert_eq(get_window().content_scale_size, GameState.TOUCH_UI_SIZE)
+	assert_gt(UITheme.scale(), 1.0)
+
+
+func test_throw_button_only_with_spear() -> void:
+	var b: Array = touch.BUTTONS.filter(func(x: Array) -> bool: return x[0] == "alt_action")[0]
+	player.inventory.set_slot(0, {})
+	player.equipment.select(0)
+	assert_false(touch._button_visible(b), "mızraksız fırlat düğmesi görünmemeli")
+	player.inventory.set_slot(0, {"id": "spear", "count": 1, "dur": 60.0})
+	assert_true(touch._button_visible(b))
+	player.inventory.set_slot(0, {})
+
+
+func test_attack_drag_also_aims() -> void:
+	var size := _screen()
+	var c: Vector2 = touch._center(touch.BUTTONS[0], size)
+	var yaw := player.rotation.y
+	_tap(c, 4, true)
+	_drag(c + Vector2(-90, 0), Vector2(-90, 0), 4)
+	await wait_seconds(0.3)
+	assert_ne(player.rotation.y, yaw, "Vur'a basılıyken sürüklemek nişan aldırmalı")
+	_tap(c + Vector2(-90, 0), 4, false)
+
+
+func test_stick_starts_from_home_base() -> void:
+	var size := _screen()
+	var home: Vector2 = touch._stick_home(size)
+	_tap(home + Vector2(20, 10), 5, true)
+	assert_eq(touch._stick_origin, home, "taban yakınına dokununca çubuk tabandan başlamalı")
+	_tap(home + Vector2(20, 10), 5, false)

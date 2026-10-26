@@ -22,6 +22,7 @@ var spawn_point := Vector3.ZERO
 
 func _ready() -> void:
 	GameState.world = self
+	GameState.apply_ui_scale()
 	if GameState.low_quality():
 		get_viewport().msaa_3d = Viewport.MSAA_DISABLED
 		get_viewport().scaling_3d_scale = 0.85

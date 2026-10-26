@@ -62,9 +62,10 @@ func _physics_process(_delta: float) -> void:
 		cancel()
 		return
 	_update_ghost()
-	var text := tr("[Sol tık] %s inşa et · [R] döndür · [Sağ tık] iptal") % recipe.display_name
+	var touch := player.touch_mode
+	var text := (tr("Kur: %s · Döndür · İptal") if touch else tr("[Sol tık] %s inşa et · [R] döndür · [Sağ tık] iptal")) % recipe.display_name
 	if not valid:
-		text = "%s\n%s" % [reason, tr("[Sağ tık] iptal")]
+		text = "%s\n%s" % [reason, tr("İptal'e dokunarak vazgeç") if touch else tr("[Sağ tık] iptal")]
 	Events.interaction_changed.emit(text, -1.0)
 
 

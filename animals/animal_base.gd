@@ -366,9 +366,26 @@ func _animate(delta: float) -> void:
 	if model:
 		var bounce := absf(sin(_anim_t)) * (0.03 + bound_height * run * run)
 		model.position.y = bounce
-		model.rotation.x = sin(_anim_t * 2.0) * 0.04 * run
+		model.rotation.x = sin(_anim_t * 2.0) * 0.04 * run + _slope_pitch(delta)
 		_flash = maxf(0.0, _flash - delta * 4.0)
 		model.scale = Vector3.ONE * (1.0 + _flash * 0.08)
+
+
+## Gövdeyi yokuşa göre öne/arkaya yatırır (ön ve arka ayak arası yükseklik farkı).
+var _pitch := 0.0
+
+
+func _slope_pitch(delta: float) -> float:
+	var gen := _gen()
+	if gen == null or indoor:
+		return 0.0
+	var fwd := -global_transform.basis.z
+	var half := 0.6
+	var front := global_position + fwd * half
+	var back := global_position - fwd * half
+	var target := atan2(gen.height_at(front.x, front.z) - gen.height_at(back.x, back.z), half * 2.0)
+	_pitch = lerpf(_pitch, clampf(target, -0.6, 0.6), clampf(delta * 6.0, 0.0, 1.0))
+	return _pitch
 
 
 # --- Ölüm ve leş ---

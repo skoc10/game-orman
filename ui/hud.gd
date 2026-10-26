@@ -127,7 +127,7 @@ func _build_hint() -> void:
 	_hint_panel.add_theme_stylebox_override("panel", UITheme.panel_box(Color(0.05, 0.08, 0.05, 0.75), 8, 14, UITheme.ACCENT.darkened(0.3)))
 	if GameState.touch_controls_enabled():
 		_hint_panel.set_anchors_preset(Control.PRESET_CENTER_TOP)
-		_place(_hint_panel, -250, 20, 250, 20)
+		_place(_hint_panel, -200, 50, 200, 50)
 	else:
 		_hint_panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
 		_place(_hint_panel, 24, 24, 24, 24)
@@ -136,7 +136,7 @@ func _build_hint() -> void:
 	_root.add_child(_hint_panel)
 	_hint_label = UITheme.label("", 17)
 	_hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_hint_label.custom_minimum_size.x = 460
+	_hint_label.custom_minimum_size.x = 372 if GameState.touch_controls_enabled() else 460
 	_hint_panel.add_child(_hint_label)
 
 
@@ -219,15 +219,17 @@ func _build_stats() -> void:
 		var bar := StatBar.new(entry[1], entry[2])
 		_bars[entry[0]] = bar
 		box.add_child(bar)
-	_bars.stamina.custom_minimum_size.y = 12
+	_bars.stamina.custom_minimum_size.y = 12 * UITheme.scale()
 	_bars.stamina.critical = 0.0
 	if touch:
 		# Bildirimler ve durum çubukların altında görünsün.
 		box.move_child(_notes, box.get_child_count() - 1)
 		box.move_child(_status, box.get_child_count() - 2)
 		_notes.alignment = BoxContainer.ALIGNMENT_BEGIN
+		_notes.custom_minimum_size.x = 0
 		for bar in _bars.values():
-			bar.custom_minimum_size.x = 200
+			bar.custom_minimum_size.x = 230
+		box.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 
 
 func _build_center() -> void:
@@ -273,7 +275,14 @@ func _build_corner() -> void:
 	_clock.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 	_clock.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	_clock.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_place(_clock, -24, 20, -24, 20)
+	if GameState.touch_controls_enabled():
+		# Sağ üst köşe dokunmatik düğmelere ayrılır; saat üst ortada durur.
+		_clock.set_anchors_preset(Control.PRESET_CENTER_TOP)
+		_clock.grow_horizontal = Control.GROW_DIRECTION_BOTH
+		_clock.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_place(_clock, -150, 10, 150, 10)
+	else:
+		_place(_clock, -24, 20, -24, 20)
 	_root.add_child(_clock)
 
 
@@ -295,7 +304,7 @@ func _build_hotbar() -> void:
 	box.add_child(row)
 	var touch := GameState.touch_controls_enabled()
 	for i in Inventory.HOTBAR:
-		var slot := ItemSlotView.new(i, 64 if touch else 58, touch)
+		var slot := ItemSlotView.new(i, 70 if touch else 58, touch)
 		slot.hotkey = str(i + 1)
 		if touch:
 			slot.clicked.connect(func(index: int, _button: int) -> void: player.equipment.select(index))

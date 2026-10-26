@@ -9,17 +9,20 @@ signal closed
 func _ready() -> void:
 	theme = UITheme.get_theme()
 	add_theme_stylebox_override("panel", UITheme.panel_box(UITheme.BG, 10, 24))
-	custom_minimum_size = Vector2(520, 0)
+	custom_minimum_size = Vector2(600, 0)
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 14)
 	add_child(v)
 	v.add_child(UITheme.label(tr("AYARLAR"), 26, UITheme.ACCENT))
-	_slider(v, tr("Fare hassasiyeti"), "mouse_sensitivity", 0.05, 1.0, 0.01)
+	var touch := GameState.touch_controls_enabled()
+	_slider(v, tr("Bakış hassasiyeti") if touch else tr("Fare hassasiyeti"), "mouse_sensitivity", 0.05, 1.0, 0.01)
 	_slider(v, tr("Görüş alanı (FOV)"), "fov", 60.0, 100.0, 1.0)
 	_slider(v, tr("Ses"), "master_volume", 0.0, 1.0, 0.01)
 	_choice(v, tr("Grafik kalitesi"), "quality", [["auto", tr("Otomatik")], ["high", tr("Yüksek")], ["low", tr("Düşük (mobil)")]])
 	_choice(v, tr("Dokunmatik kontroller"), "touch_controls", [["auto", tr("Otomatik")], ["on", tr("Açık")], ["off", tr("Kapalı")]])
-	v.add_child(UITheme.label(tr("Kalite ve dokunmatik ayarı yeni yüklenen oyunda geçerli olur."), 13, UITheme.TEXT_DIM))
+	var note := UITheme.label(tr("Kalite ve dokunmatik ayarı yeni yüklenen oyunda geçerli olur."), 13, UITheme.TEXT_DIM)
+	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	v.add_child(note)
 	var full := CheckBox.new()
 	full.text = tr("Tam ekran")
 	full.button_pressed = bool(GameState.settings.get("fullscreen", false))
@@ -45,7 +48,7 @@ func _slider(parent: Control, title: String, key: String, lo: float, hi: float, 
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 12)
 	var l := UITheme.label(title, 18)
-	l.custom_minimum_size.x = 190
+	l.custom_minimum_size.x = 250
 	row.add_child(l)
 	var s := HSlider.new()
 	s.min_value = lo
@@ -70,7 +73,7 @@ func _choice(parent: Control, title: String, key: String, options: Array) -> voi
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 12)
 	var l := UITheme.label(title, 18)
-	l.custom_minimum_size.x = 190
+	l.custom_minimum_size.x = 250
 	row.add_child(l)
 	var ob := OptionButton.new()
 	ob.custom_minimum_size = Vector2(220, 40)

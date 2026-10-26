@@ -117,7 +117,8 @@ func _show_details() -> void:
 	_drop_btn.visible = item != null
 	if item == null:
 		_name.text = tr("Bir eşya seç")
-		_desc.text = tr("Sol tık: seç ve taşı · Sağ tık: kullan / ele al")
+		_desc.text = tr("Dokun: seç, sonra başka slota dokunarak taşı") if GameState.touch_controls_enabled() \
+			else tr("Sol tık: seç ve taşı · Sağ tık: kullan / ele al")
 		_effects.text = ""
 		return
 	_name.text = item.display_name
@@ -200,15 +201,17 @@ func _build() -> void:
 	var center := CenterContainer.new()
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_root.add_child(center)
+	# Telefonda ekran alçak: slotlar ve paneller sıkıştırılır.
+	var touch := GameState.touch_controls_enabled()
 	var panel := PanelContainer.new()
-	panel.add_theme_stylebox_override("panel", UITheme.panel_box(UITheme.BG, 10, 20))
+	panel.add_theme_stylebox_override("panel", UITheme.panel_box(UITheme.BG, 10, 12 if touch else 20))
 	center.add_child(panel)
 	var cols := HBoxContainer.new()
 	cols.add_theme_constant_override("separation", 28)
 	panel.add_child(cols)
 
 	var left := VBoxContainer.new()
-	left.add_theme_constant_override("separation", 10)
+	left.add_theme_constant_override("separation", 6 if touch else 10)
 	cols.add_child(left)
 	var head := HBoxContainer.new()
 	head.add_child(UITheme.label(tr("ENVANTER"), 24, UITheme.ACCENT))
@@ -221,14 +224,15 @@ func _build() -> void:
 	close_btn.pressed.connect(close)
 	head.add_child(close_btn)
 	left.add_child(head)
-	left.add_child(UITheme.label(tr("İlk sıra hızlı erişim çubuğu (1–5)"), 14, UITheme.TEXT_DIM))
+	if not touch:
+		left.add_child(UITheme.label(tr("İlk sıra hızlı erişim çubuğu (1–5)"), 14, UITheme.TEXT_DIM))
 	var grid := GridContainer.new()
 	grid.columns = COLUMNS
 	grid.add_theme_constant_override("h_separation", 8)
 	grid.add_theme_constant_override("v_separation", 8)
 	left.add_child(grid)
 	for i in player.inventory.size():
-		var slot := ItemSlotView.new(i, 72)
+		var slot := ItemSlotView.new(i, 62 if touch else 72)
 		if i < Inventory.HOTBAR:
 			slot.hotkey = str(i + 1)
 		slot.clicked.connect(_on_slot_clicked)
@@ -237,7 +241,7 @@ func _build() -> void:
 
 	var details := PanelContainer.new()
 	details.add_theme_stylebox_override("panel", UITheme.panel_box(UITheme.BG_LIGHT, 8, 12))
-	details.custom_minimum_size = Vector2(0, 150)
+	details.custom_minimum_size = Vector2(0, 110 if touch else 150)
 	left.add_child(details)
 	var dv := VBoxContainer.new()
 	details.add_child(dv)
@@ -267,9 +271,10 @@ func _build() -> void:
 	right.add_theme_constant_override("separation", 10)
 	cols.add_child(right)
 	right.add_child(UITheme.label(tr("ÜRETİM"), 24, UITheme.ACCENT))
-	right.add_child(UITheme.label(tr("İnşa için B tuşu"), 14, UITheme.TEXT_DIM))
+	if not touch:
+		right.add_child(UITheme.label(tr("İnşa için B tuşu"), 14, UITheme.TEXT_DIM))
 	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(420, 520)
+	scroll.custom_minimum_size = Vector2(400, 470) if touch else Vector2(420, 520)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	right.add_child(scroll)
 	_recipe_box = VBoxContainer.new()

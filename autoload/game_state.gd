@@ -28,8 +28,24 @@ var settings := {
 }
 
 
+## Dokunmatik cihazlarda arayüzün tasarlandığı temel boyut. Masaüstündeki
+## 1600x900'e göre her şey 1,5 kat büyük görünür.
+const TOUCH_UI_SIZE := Vector2i(1067, 600)
+const DESKTOP_UI_SIZE := Vector2i(1600, 900)
+
+
 func _ready() -> void:
 	load_settings()
+	# DebugCapture argümanları (--touch) okunabilsin diye ertelenir.
+	apply_ui_scale.call_deferred()
+
+
+## Sahne açılırken çağrılır: dokunmatik ayarı değiştiyse yeni sahnede geçerli olur.
+func apply_ui_scale() -> void:
+	var size := TOUCH_UI_SIZE if touch_controls_enabled() else DESKTOP_UI_SIZE
+	if get_window().content_scale_size != size:
+		get_window().content_scale_size = size
+	UITheme.reset()
 
 
 func has_save(path := "") -> bool:

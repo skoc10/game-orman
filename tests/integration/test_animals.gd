@@ -289,3 +289,23 @@ func test_birds_take_off_when_approached() -> void:
 	await wait_process_frames(2)
 	assert_eq(flock.mode, BirdFlock.Mode.FLYING)
 	flock.queue_free()
+
+
+func test_snake_rests_on_sloped_ground() -> void:
+	# En eğimli noktalardan birini bul ve yılanı oraya koy.
+	var best := Vector3.ZERO
+	var best_slope := 0.0
+	for i in 400:
+		var x := randf_range(-150, 150)
+		var z := randf_range(-150, 150)
+		var s: float = world.gen.slope_at(x, z)
+		if s > best_slope and s < 0.4 and world.gen.is_land(x, z, 1.0):
+			best_slope = s
+			best = Vector3(x, world.gen.height_at(x, z) + 0.1, z)
+	var snake: Snake = world.animals.spawn_animal("snake", best)
+	player.global_position = best + Vector3(40, 0, 0)
+	await wait_physics_frames(10)
+	for seg in snake._segments:
+		var p: Vector3 = seg.global_position
+		assert_almost_eq(p.y, world.gen.height_at(p.x, p.z), 0.15, "yılan halkası zemine değmeli")
+	snake.queue_free()

@@ -74,6 +74,18 @@ func on_hurt(_attacker: Node3D) -> void:
 	set_state(State.RETREAT)
 
 
+## Her halkayı altındaki zemine oturtur; eğimde kuyruk ya da baş havada kalmaz.
+func _rest_on_ground() -> void:
+	var gen := _gen()
+	if gen == null or indoor or state == State.DEAD:
+		return
+	for seg in _segments:
+		var p := seg.global_position
+		seg.global_position = Vector3(p.x, gen.height_at(p.x, p.z) + 0.045, p.z)
+	var h := _head.global_position
+	_head.global_position = Vector3(h.x, maxf(h.y, gen.height_at(h.x, h.z) + 0.06), h.z)
+
+
 func _build_shape() -> void:
 	var shape := CollisionShape3D.new()
 	var capsule := CapsuleShape3D.new()
@@ -114,11 +126,16 @@ func _animate(delta: float) -> void:
 	var wave := 0.25 + clampf(speed, 0.0, 2.0) * 0.2
 	for i in _segments.size():
 		_segments[i].rotation.y = sin(_anim_t - i * 0.9) * wave
+	_rest_on_ground()
 	var target := 0.0
 	if state == State.ALERT:
 		target = 0.25
 	_rear = maxf(0.0, _rear - delta * 3.0)
-	_head.position.y = lerpf(_head.position.y, 0.07 + target + _rear * 0.1, clampf(delta * 6.0, 0.0, 1.0))
+	var ground := 0.0
+	var gen := _gen()
+	if gen and not indoor:
+		ground = gen.height_at(_head.global_position.x, _head.global_position.z) - global_position.y
+	_head.position.y = lerpf(_head.position.y, ground + 0.07 + target + _rear * 0.1, clampf(delta * 6.0, 0.0, 1.0))
 	_head.position.z = -0.2 - _rear * 0.4
 	_head.rotation.y = sin(_anim_t * 0.5) * 0.2
 	_flash = maxf(0.0, _flash - delta * 4.0)

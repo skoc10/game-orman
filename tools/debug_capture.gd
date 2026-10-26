@@ -133,6 +133,12 @@ func on_world_ready(world: Node) -> void:
 		world.get_node("InventoryScreen").open.call_deferred()
 	if args.has("pause"):
 		world.get_node("PauseMenu").open.call_deferred()
+	if args.has("settings"):
+		var pm := world.get_node("PauseMenu")
+		pm.open.call_deferred()
+		pm._show.call_deferred(pm._settings)
+	if args.has("buildmenu"):
+		world.get_node("BuildMenu").open.call_deferred()
 	if args.has("select"):
 		player.equipment.select(int(args.select))
 	if args.has("shot"):

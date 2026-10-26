@@ -53,7 +53,7 @@ jobs:
         run: $GODOT --headless --import --path . || true
 
       - name: Testler
-        run: $GODOT --headless --path . -s res://addons/gut/gut_cmdln.gd -gconfig=res://.gutconfig.json
+        run: ./tools/test.sh
 
       - name: Web için dışa aktar
         run: |
