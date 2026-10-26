@@ -185,6 +185,15 @@ func _strike(item: ItemData, damage: float, weak: bool) -> void:
 			_wear()
 		else:
 			player.notify(tr("Ağaç kesmek için balta gerekli."))
+	elif col is Node and (col as Node).get_meta("rock", false):
+		if item and item.chop_power > 0.0:
+			Effects.burst(player.get_parent(), hit.position, Color(0.55, 0.54, 0.5), 8, 2.0)
+			Sfx.play_at("chop", hit.position, -6.0, 30.0, 0.25)
+			if player.rng.randf() < 0.6:
+				player.give("stone", 1)
+			_wear()
+		else:
+			player.notify(tr("Kayadan taş kırmak için balta gerekli."))
 	elif col.has_method("take_hit"):
 		col.take_hit(damage, player)
 		Sfx.play_at("hit_flesh", hit.position, 0.0, 30.0)

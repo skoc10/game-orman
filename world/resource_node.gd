@@ -6,10 +6,10 @@ extends StaticBody3D
 signal harvested(node: ResourceNode)
 
 const KINDS := {
-	"bush": {"verb": "Böğürtlen topla", "yields": {"berries": 3}, "regrow": 2, "hide": false},
-	"fiber_plant": {"verb": "Lif topla", "yields": {"fiber": 2}, "regrow": 1, "hide": true},
-	"stick": {"verb": "Dal al", "yields": {"stick": 1}, "regrow": 1, "hide": true},
-	"stone": {"verb": "Taş al", "yields": {"stone": 1}, "regrow": 3, "hide": true},
+	"bush": {"verb": "Böğürtlen topla", "yields": {"berries": 4}, "regrow": 2, "hide": false},
+	"fiber_plant": {"verb": "Lif topla", "yields": {"fiber": 3}, "regrow": 1, "hide": true},
+	"stick": {"verb": "Dal al", "yields": {"stick": 2}, "regrow": 1, "hide": true},
+	"stone": {"verb": "Taş al", "yields": {"stone": 2}, "regrow": 2, "hide": true},
 	"mushroom": {"verb": "Mantar topla", "yields": {"mushroom": 1}, "regrow": 2, "hide": true},
 	"mushroom_red": {"verb": "Kırmızı mantar topla", "yields": {"mushroom_red": 1}, "regrow": 2, "hide": true},
 }
@@ -32,7 +32,7 @@ func setup(p_id: int, p_kind: String, xform: Transform3D) -> void:
 	collision_mask = 0
 	_shape = CollisionShape3D.new()
 	var sphere := SphereShape3D.new()
-	sphere.radius = 0.7 if kind == "bush" else 0.4
+	sphere.radius = 0.75 if kind == "bush" else 0.5
 	_shape.shape = sphere
 	_shape.position.y = 0.45 if kind == "bush" else 0.2
 	add_child(_shape)
@@ -63,7 +63,7 @@ func setup(p_id: int, p_kind: String, xform: Transform3D) -> void:
 func get_interaction(player: Player, _shape_idx: int) -> Dictionary:
 	if not available:
 		return {"text": tr("Henüz yeniden yetişmedi")} if kind == "bush" else {}
-	return {"text": tr(KINDS[kind].verb), "action": _harvest.bind(player)}
+	return {"text": tr(KINDS[kind].verb), "action": _harvest.bind(player), "auto": true}
 
 
 func set_available(v: bool) -> void:

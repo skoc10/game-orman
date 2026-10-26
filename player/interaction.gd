@@ -6,43 +6,60 @@ extends Node
 ##   get_interaction(player: Player, shape_idx: int) -> Dictionary
 ## Dönen sözlük: {"text": String, "action": Callable, "hold": float (saniye, 0 = tek basış)}
 ## Boş sözlük etkileşim olmadığını belirtir. "action" yoksa yalnızca bilgi gösterilir.
+## "auto": true olan hızlı toplamalar E basılı tutulurken sırayla tekrarlanır.
+##
+## Hedef bulma bağışlayıcıdır: tam nişan ışını bir şeye değmezse, bakış yönü
+## boyunca küçük kürelerle yerdeki eşyalar aranır. E basışı olay olarak anında işlenir.
 
 const WATER_REACH := 4.0
+const REACH := 3.0
+const ASSIST_RADIUS := 0.45
+const ASSIST_MASK := 4 | 8
+const AUTO_REPEAT := 0.3
 
 var player: Player
 var current: Dictionary = {}
 
 var _hold := 0.0
 var _key := ""
+var _auto_timer := 0.0
+var _assist_shape := SphereShape3D.new()
+
+
+func _ready() -> void:
+	_assist_shape.radius = ASSIST_RADIUS
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not event.is_action_pressed("interact") or event.is_echo():
+		return
+	if player == null or player.stats.dead or player.input_locked:
+		return
+	# Basış anında hedefi yeniden bul: bir önceki fizik karesinin hedefini beklemeden çalış.
+	_scan()
+	var action: Callable = current.get("action", Callable())
+	if action.is_valid() and float(current.get("hold", 0.0)) <= 0.0:
+		action.call()
+		_auto_timer = AUTO_REPEAT
+		get_viewport().set_input_as_handled()
 
 
 func _physics_process(delta: float) -> void:
 	if player == null or player.stats.dead or player.input_locked:
 		_set_current({}, "")
 		return
-	var info := {}
-	var key := ""
-	var ray := player.interact_ray
-	if ray.is_colliding():
-		var col := ray.get_collider()
-		var shape := ray.get_collider_shape()
-		if col and col.has_method("get_interaction"):
-			info = col.get_interaction(player, shape)
-			key = "%d:%d" % [col.get_instance_id(), shape]
-	if info.is_empty():
-		info = _water_interaction()
-		key = "water"
-	if not info.is_empty():
-		key += ":" + str(info.get("text", ""))
-	_set_current(info, key)
+	var info := _scan()
 
 	var progress := -1.0
 	var action: Callable = info.get("action", Callable())
+	_auto_timer = maxf(0.0, _auto_timer - delta)
 	if action.is_valid():
 		var hold := float(info.get("hold", 0.0))
 		if hold <= 0.0:
-			if Input.is_action_just_pressed("interact"):
+			# E basılı tutulurken yerdeki eşyalar art arda toplanır.
+			if info.get("auto", false) and Input.is_action_pressed("interact") and _auto_timer <= 0.0:
 				action.call()
+				_auto_timer = AUTO_REPEAT
 		elif Input.is_action_pressed("interact"):
 			_hold += delta
 			progress = clampf(_hold / hold, 0.0, 1.0)
@@ -52,6 +69,54 @@ func _physics_process(delta: float) -> void:
 		else:
 			_hold = 0.0
 	Events.interaction_changed.emit(_prompt_text(info), progress)
+
+
+## Bakılan hedefi bulur, current'ı günceller ve etkileşim sözlüğünü döndürür.
+func _scan() -> Dictionary:
+	var info := {}
+	var key := ""
+	var ray := player.interact_ray
+	if ray.is_colliding():
+		var col := ray.get_collider()
+		var shape := ray.get_collider_shape()
+		if col and col.has_method("get_interaction"):
+			info = col.get_interaction(player, shape)
+			key = "%d:%d" % [col.get_instance_id(), shape]
+	if not (info.get("action", Callable()) as Callable).is_valid():
+		var assisted := _assist_target()
+		if not assisted.is_empty():
+			info = assisted.info
+			key = assisted.key
+	if info.is_empty():
+		info = _water_interaction()
+		key = "water"
+	if not info.is_empty():
+		key += ":" + str(info.get("text", ""))
+	_set_current(info, key)
+	return info
+
+
+## Bakış yönü boyunca küreler bırakıp en yakın etkileşilebilir nesneyi arar.
+## Yerdeki küçük eşyalara tam nişan almak gerekmez.
+func _assist_target() -> Dictionary:
+	var from := player.camera.global_position
+	var dir := player.look_direction()
+	var space := player.get_world_3d().direct_space_state
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.shape = _assist_shape
+	query.collision_mask = ASSIST_MASK
+	query.exclude = [player.get_rid()]
+	var d := 0.6
+	while d <= REACH:
+		query.transform = Transform3D(Basis(), from + dir * d)
+		for hit in space.intersect_shape(query, 4):
+			var col: Object = hit.collider
+			if col and col.has_method("get_interaction"):
+				var info: Dictionary = col.get_interaction(player, int(hit.shape))
+				if (info.get("action", Callable()) as Callable).is_valid():
+					return {"info": info, "key": "%d:%d" % [col.get_instance_id(), int(hit.shape)]}
+		d += 0.4
+	return {}
 
 
 func _set_current(info: Dictionary, key: String) -> void:

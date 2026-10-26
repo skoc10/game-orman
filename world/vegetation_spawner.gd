@@ -72,6 +72,8 @@ func _build_rocks(gen: WorldGen, spawn: Vector3) -> void:
 	_rock_body.name = "Rocks"
 	_rock_body.collision_layer = 1
 	_rock_body.collision_mask = 0
+	# Büyük kayalar baltayla kırılıp taş verir (Equipment._strike).
+	_rock_body.set_meta("rock", true)
 	add_child(_rock_body)
 	var groups := {}
 	var placed := 0

@@ -25,7 +25,7 @@ func _ready() -> void:
 	collision_mask = 0
 	_shape = CollisionShape3D.new()
 	var sphere := SphereShape3D.new()
-	sphere.radius = 0.45
+	sphere.radius = 0.55
 	_shape.shape = sphere
 	_shape.position.y = 0.15
 	add_child(_shape)
@@ -44,7 +44,7 @@ func get_interaction(player: Player, _shape_idx: int) -> Dictionary:
 	var label := ItemDB.display_name(item_id)
 	if count > 1:
 		label += " ×%d" % count
-	return {"text": tr("Al: %s") % label, "action": _pick.bind(player)}
+	return {"text": tr("Al: %s") % label, "action": _pick.bind(player), "auto": true}
 
 
 func _pick(player: Player) -> void:

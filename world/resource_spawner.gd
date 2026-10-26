@@ -6,15 +6,15 @@ extends Node3D
 
 ## tür -> adet
 const COUNTS := {
-	"stick": 260,
-	"stone": 200,
-	"fiber_plant": 160,
+	"stick": 380,
+	"stone": 300,
+	"fiber_plant": 220,
 	"bush": 110,
 	"mushroom": 60,
 	"mushroom_red": 40,
 }
 ## Başlangıç noktasının yakınına mutlaka konan kaynaklar.
-const NEAR_SPAWN := {"stick": 8, "stone": 6, "fiber_plant": 5, "bush": 2}
+const NEAR_SPAWN := {"stick": 10, "stone": 8, "fiber_plant": 6, "bush": 3}
 
 var nodes: Array[ResourceNode] = []
 ## kaynak kimliği -> toplandığı gün

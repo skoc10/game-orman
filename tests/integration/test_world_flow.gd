@@ -53,7 +53,7 @@ func test_harvest_and_regrow() -> void:
 	var before := player.inventory.count_of("berries")
 	var info: Dictionary = node.get_interaction(player, 0)
 	(info.action as Callable).call()
-	assert_eq(player.inventory.count_of("berries"), before + 3)
+	assert_eq(player.inventory.count_of("berries"), before + int(ResourceNode.KINDS.bush.yields.berries))
 	assert_false(node.available)
 	assert_eq(node.get_interaction(player, 0).get("action", null), null, "toplanmış çalı tekrar toplanamaz")
 	var start_day := TimeOfDay.day
@@ -256,3 +256,20 @@ func test_save_and_load_roundtrip() -> void:
 
 func _count_buildables() -> int:
 	return get_tree().get_nodes_in_group("buildable").filter(func(n: Node) -> bool: return not n.is_queued_for_deletion()).size()
+
+
+func test_assisted_targeting_finds_item_without_exact_aim() -> void:
+	# Oyuncunun önüne, tam nişan çizgisinin biraz yanına bir taş bırak.
+	player.rotation.y = 0.0
+	player.head.rotation.x = deg_to_rad(-35.0)
+	var fwd := -player.global_transform.basis.z
+	var side := player.global_transform.basis.x
+	var p: Vector3 = player.global_position + fwd * 1.8 + side * 0.35
+	p.y = world.gen.height_at(p.x, p.z)
+	var pickup: Pickup = world.spawn_pickup("stone", 1, p)
+	await wait_physics_frames(2)
+	var info: Dictionary = player.interaction._scan()
+	assert_string_contains(str(info.get("text", "")), "Taş", "yakındaki taş hedeflenmeli")
+	assert_true(info.get("auto", false))
+	pickup.queue_free()
+	player.head.rotation.x = 0.0
