@@ -209,7 +209,7 @@ func _build_visuals() -> void:
 	_light.light_color = Color(1.0, 0.62, 0.32)
 	_light.omni_range = 14.0
 	_light.light_energy = 3.0
-	_light.shadow_enabled = true
+	_light.shadow_enabled = not GameState.low_quality()
 	_light.position = Vector3(0, 0.8, 0)
 	add_child(_light)
 

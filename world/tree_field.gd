@@ -48,6 +48,10 @@ func build(gen: WorldGen, spawn: Vector3) -> void:
 	add_child(_stumps)
 
 
+static func view_distance() -> float:
+	return 150.0 if GameState.low_quality() else VIEW_DISTANCE
+
+
 func count() -> int:
 	return positions.size()
 
@@ -126,7 +130,7 @@ func _build_chunks() -> void:
 		var mmi := MultiMeshInstance3D.new()
 		mmi.multimesh = mm
 		mmi.position = center
-		mmi.visibility_range_end = VIEW_DISTANCE
+		mmi.visibility_range_end = view_distance()
 		mmi.visibility_range_end_margin = 20.0
 		mmi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
 		add_child(mmi)

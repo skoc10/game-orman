@@ -51,7 +51,7 @@ func close() -> void:
 	is_open = false
 	visible = false
 	player.input_locked = false
-	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	GameState.capture_mouse()
 
 
 func _refresh() -> void:
@@ -210,7 +210,17 @@ func _build() -> void:
 	var left := VBoxContainer.new()
 	left.add_theme_constant_override("separation", 10)
 	cols.add_child(left)
-	left.add_child(UITheme.label(tr("ENVANTER"), 24, UITheme.ACCENT))
+	var head := HBoxContainer.new()
+	head.add_child(UITheme.label(tr("ENVANTER"), 24, UITheme.ACCENT))
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	head.add_child(spacer)
+	var close_btn := Button.new()
+	close_btn.text = tr("Kapat")
+	close_btn.custom_minimum_size = Vector2(100, 40)
+	close_btn.pressed.connect(close)
+	head.add_child(close_btn)
+	left.add_child(head)
 	left.add_child(UITheme.label(tr("İlk sıra hızlı erişim çubuğu (1–5)"), 14, UITheme.TEXT_DIM))
 	var grid := GridContainer.new()
 	grid.columns = COLUMNS

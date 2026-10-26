@@ -22,6 +22,9 @@ var spawn_point := Vector3.ZERO
 
 func _ready() -> void:
 	GameState.world = self
+	if GameState.low_quality():
+		get_viewport().msaa_3d = Viewport.MSAA_DISABLED
+		get_viewport().scaling_3d_scale = 0.85
 	var save := GameState.pending_load
 	var seed_value := int(save.get("seed", 0)) if not save.is_empty() else GameState.new_game_seed
 	if seed_value == 0:
@@ -300,8 +303,8 @@ func _spawn_camp_loot() -> void:
 func _add_water() -> ShaderMaterial:
 	var plane := PlaneMesh.new()
 	plane.size = Vector2(1400, 1400)
-	plane.subdivide_width = 200
-	plane.subdivide_depth = 200
+	plane.subdivide_width = 100 if GameState.low_quality() else 200
+	plane.subdivide_depth = 100 if GameState.low_quality() else 200
 	var mat := ShaderMaterial.new()
 	mat.shader = WATER_SHADER
 	var water := MeshInstance3D.new()

@@ -64,7 +64,7 @@ func close() -> void:
 	is_open = false
 	visible = false
 	get_tree().paused = false
-	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	GameState.capture_mouse()
 	if player:
 		player.camera.fov = float(GameState.settings.fov)
 

@@ -19,11 +19,12 @@ func _build_grass(gen: WorldGen) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = gen.seed_value + 200
 	var groups := {}
-	var n := int(WorldGen.SIZE / GRASS_SPACING)
+	var spacing := GRASS_SPACING * (1.5 if GameState.low_quality() else 1.0)
+	var n := int(WorldGen.SIZE / spacing)
 	for gz in n:
 		for gx in n:
-			var x := -WorldGen.HALF + (gx + rng.randf()) * GRASS_SPACING
-			var z := -WorldGen.HALF + (gz + rng.randf()) * GRASS_SPACING
+			var x := -WorldGen.HALF + (gx + rng.randf()) * spacing
+			var z := -WorldGen.HALF + (gz + rng.randf()) * spacing
 			var roll := rng.randf()
 			var s := rng.randf_range(0.7, 1.4)
 			var yaw := rng.randf() * TAU
@@ -59,7 +60,7 @@ func _build_grass(gen: WorldGen) -> void:
 		mmi.multimesh = mm
 		mmi.position = center
 		mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		mmi.visibility_range_end = GRASS_VIEW
+		mmi.visibility_range_end = GRASS_VIEW * (0.6 if GameState.low_quality() else 1.0)
 		mmi.visibility_range_end_margin = 10.0
 		mmi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
 		add_child(mmi)
@@ -120,5 +121,5 @@ func _build_rocks(gen: WorldGen, spawn: Vector3) -> void:
 		var mmi := MultiMeshInstance3D.new()
 		mmi.multimesh = mm
 		mmi.position = center
-		mmi.visibility_range_end = TreeField.VIEW_DISTANCE
+		mmi.visibility_range_end = TreeField.view_distance()
 		add_child(mmi)

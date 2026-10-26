@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://ui/build_menu.tscn" id="5_build"]
 [ext_resource type="PackedScene" path="res://ui/storage_screen.tscn" id="6_storage"]
 [ext_resource type="PackedScene" path="res://ui/pause_menu.tscn" id="7_pause"]
+[ext_resource type="PackedScene" path="res://ui/touch_controls.tscn" id="8_touch"]
 
 [node name="World" type="Node3D"]
 script = ExtResource("1_world")
@@ -20,5 +21,7 @@ script = ExtResource("1_world")
 [node name="BuildMenu" parent="." instance=ExtResource("5_build")]
 
 [node name="StorageScreen" parent="." instance=ExtResource("6_storage")]
+
+[node name="TouchControls" parent="." instance=ExtResource("8_touch")]
 
 [node name="PauseMenu" parent="." instance=ExtResource("7_pause")]

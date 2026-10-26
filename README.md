@@ -4,6 +4,8 @@ Issız bir ormanda tek başına hayatta kalma oyunu. Birinci şahıs bakış, lo
 
 The Forest'tan esinlendi ama **zombi, yamyam ya da gece saldırısı yok**. Tehlike doğadan geliyor: kurtlar, açlık, susuzluk, soğuk ve karanlık. Oyunun bir sonu yok; amaç olabildiğince çok gün hayatta kalmak.
 
+**▶ Tarayıcıda oyna: https://skoc10.github.io/game-orman/** (bilgisayarda ve telefonda; telefonu yan çevir)
+
 ![Gece kampı](docs/screenshots/gece_kamp.jpg)
 
 | | |
@@ -70,6 +72,8 @@ godot --editor --path .
 ```
 
 ## Kontroller
+
+Telefon ve tablette ekran düğmeleri otomatik açılır: sol tarafta parmağın değdiği yerde hareket çubuğu belirir, sağ tarafta sürükleyerek etrafa bakılır. Vur, E, Zıpla, Fırlat düğmeleri sağ altta; Koş ve Eğil aç/kapa düğmeleri solda; Çanta, İnşa ve Menü üstte. Hızlı erişim çubuğundaki eşyaya dokunarak seçilir. Çubuğu sonuna kadar ileri itmek de koşturur. Ayarlardan dokunmatik kontrolleri ve grafik kalitesini değiştirebilirsin.
 
 | Eylem | Klavye / fare | Gamepad |
 |---|---|---|
@@ -167,6 +171,14 @@ Diğer argümanlar: `--pos=x,z`, `--height=m`, `--yaw`, `--pitch`, `--atlake`, `
 ### Gerçek hayvan modelleri (isteğe bağlı)
 
 Oyun, tamamı koddan üretilen yer tutucu low-poly modellerle çalışır. `assets/models/animals/` klasörüne Quaternius *Ultimate Animated Animals* paketinden (CC0) `Deer.gltf`, `Stag.gltf` ve `Wolf.gltf` dosyalarını (ayı için `Bear.gltf`) koyarsan oyun otomatik olarak bunları kullanır. Animasyonlar isimlerinden eşlenir. Ayrıntılar için [assets/models/animals/README.md](assets/models/animals/README.md) dosyasına bak.
+
+### Web sürümü ve otomatik yayın
+
+`.github/workflows/web.yml` her `main` push'unda testleri çalıştırır, oyunu web için dışa aktarır ve GitHub Pages'e yayınlar. Web ve mobilde Godot'nun hafif *Compatibility* grafik modu ve düşük kalite ayarı (kısa görüş mesafesi, seyrek çimen, az gölge) kullanılır. Bilgisayarda aynı görünümü denemek için:
+
+```bash
+godot --path . --rendering-method gl_compatibility -- --lowq --touch
+```
 
 ### Dışa aktarma (macOS / Windows)
 

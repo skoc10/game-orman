@@ -21,6 +21,10 @@ var settings := {
 	"fov": 75.0,
 	"master_volume": 0.8,
 	"fullscreen": false,
+	## "auto", "high" ya da "low". Otomatikte web ve dokunmatik cihazlarda düşük.
+	"quality": "auto",
+	## "auto", "on" ya da "off". Otomatikte dokunmatik ekranda açılır.
+	"touch_controls": "auto",
 }
 
 
@@ -118,6 +122,43 @@ func apply_settings() -> void:
 			DisplayServer.window_set_mode(want)
 	if world and world.player:
 		world.player.camera.fov = float(settings.fov)
+
+
+## Web ve mobilde (ya da ayarda seçiliyse) hafif grafik: kısa görüş, seyrek
+## çimen, az gölge. Dünya kurulurken bir kez okunur.
+func low_quality() -> bool:
+	var q := str(settings.get("quality", "auto"))
+	if q == "low":
+		return true
+	if q == "high":
+		return false
+	var debug := get_node_or_null("/root/DebugCapture")
+	if debug and debug.args.has("lowq"):
+		return true
+	return OS.has_feature("web") or OS.has_feature("mobile") or is_touch_device()
+
+
+func is_touch_device() -> bool:
+	return DisplayServer.is_touchscreen_available() and DisplayServer.get_name() != "headless"
+
+
+## Fareyi oyun için yakalar; dokunmatik modda imleç serbest kalır.
+func capture_mouse() -> void:
+	if world and world.player and world.player.touch_mode:
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	else:
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+
+## Ekran düğmeleri gösterilsin mi?
+func touch_controls_enabled() -> bool:
+	var t := str(settings.get("touch_controls", "auto"))
+	var debug := get_node_or_null("/root/DebugCapture")
+	if t == "on" or (debug and debug.args.has("touch")):
+		return true
+	if t == "off":
+		return false
+	return is_touch_device()
 
 
 func _path(path: String) -> String:

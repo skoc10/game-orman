@@ -1,6 +1,7 @@
 # Godot
 .godot/
 export/
+build/
 *.translation
 
 # Asset indirme alanı (zip'ler buraya bırakılır, repoya girmez)

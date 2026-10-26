@@ -27,7 +27,12 @@ void fragment() {
 	NORMAL = n;
 
 	float depth = texture(depth_tex, SCREEN_UV).r;
+	// Forward+ ters çevrilmiş [0,1] derinlik kullanır; Compatibility (web) OpenGL'in [-1,1] aralığını.
+#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
+	vec4 behind = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
+#else
 	vec4 behind = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, depth, 1.0);
+#endif
 	behind.xyz /= behind.w;
 	float water_depth = max(VERTEX.z - behind.z, 0.0);
 

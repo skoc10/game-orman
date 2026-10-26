@@ -37,6 +37,8 @@ var debug_fly := false
 var input_locked := false
 ## Hata ayıklama ekran görüntülerinde gerçek fare kamerayı oynatmasın diye kapatılır.
 var mouse_look := true
+## Dokunmatik kontroller açık: fare yakalanmaz, bakış ekran sürüklemesiyle olur.
+var touch_mode := false
 
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity", 9.8)
 var _bob_time := 0.0
@@ -80,7 +82,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED and mouse_look:
 		var sens := float(GameState.settings.mouse_sensitivity)
 		_look(Vector2(event.relative.x, event.relative.y) * sens)
-	elif event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+	elif event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED and not touch_mode:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		get_viewport().set_input_as_handled()
 
@@ -317,6 +319,12 @@ func teleport(pos: Vector3, yaw_deg := NAN, pitch_deg := NAN) -> void:
 		rotation.y = deg_to_rad(yaw_deg)
 	if not is_nan(pitch_deg):
 		head.rotation.x = deg_to_rad(pitch_deg)
+
+
+## Dokunmatik bakış: piksel cinsinden sürükleme.
+func look_by(delta_px: Vector2) -> void:
+	if not input_locked:
+		_look(delta_px)
 
 
 func look_direction() -> Vector3:

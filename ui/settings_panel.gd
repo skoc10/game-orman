@@ -17,6 +17,9 @@ func _ready() -> void:
 	_slider(v, tr("Fare hassasiyeti"), "mouse_sensitivity", 0.05, 1.0, 0.01)
 	_slider(v, tr("Görüş alanı (FOV)"), "fov", 60.0, 100.0, 1.0)
 	_slider(v, tr("Ses"), "master_volume", 0.0, 1.0, 0.01)
+	_choice(v, tr("Grafik kalitesi"), "quality", [["auto", tr("Otomatik")], ["high", tr("Yüksek")], ["low", tr("Düşük (mobil)")]])
+	_choice(v, tr("Dokunmatik kontroller"), "touch_controls", [["auto", tr("Otomatik")], ["on", tr("Açık")], ["off", tr("Kapalı")]])
+	v.add_child(UITheme.label(tr("Kalite ve dokunmatik ayarı yeni yüklenen oyunda geçerli olur."), 13, UITheme.TEXT_DIM))
 	var full := CheckBox.new()
 	full.text = tr("Tam ekran")
 	full.button_pressed = bool(GameState.settings.get("fullscreen", false))
@@ -60,6 +63,24 @@ func _slider(parent: Control, title: String, key: String, lo: float, hi: float, 
 		GameState.settings[key] = x
 		val.text = _fmt(key, x)
 		GameState.apply_settings())
+	parent.add_child(row)
+
+
+func _choice(parent: Control, title: String, key: String, options: Array) -> void:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	var l := UITheme.label(title, 18)
+	l.custom_minimum_size.x = 190
+	row.add_child(l)
+	var ob := OptionButton.new()
+	ob.custom_minimum_size = Vector2(220, 40)
+	for i in options.size():
+		ob.add_item(options[i][1], i)
+		if str(GameState.settings.get(key, "auto")) == options[i][0]:
+			ob.select(i)
+	ob.item_selected.connect(func(i: int) -> void:
+		GameState.settings[key] = options[i][0])
+	row.add_child(ob)
 	parent.add_child(row)
 
 

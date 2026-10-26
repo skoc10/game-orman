@@ -125,8 +125,12 @@ func show_hint(text: String) -> void:
 func _build_hint() -> void:
 	_hint_panel = PanelContainer.new()
 	_hint_panel.add_theme_stylebox_override("panel", UITheme.panel_box(Color(0.05, 0.08, 0.05, 0.75), 8, 14, UITheme.ACCENT.darkened(0.3)))
-	_hint_panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	_place(_hint_panel, 24, 24, 24, 24)
+	if GameState.touch_controls_enabled():
+		_hint_panel.set_anchors_preset(Control.PRESET_CENTER_TOP)
+		_place(_hint_panel, -250, 20, 250, 20)
+	else:
+		_hint_panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
+		_place(_hint_panel, 24, 24, 24, 24)
 	_hint_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hint_panel.visible = false
 	_root.add_child(_hint_panel)
@@ -183,12 +187,18 @@ func _build_vignette() -> void:
 
 
 func _build_stats() -> void:
+	# Dokunmatik modda sol alt hareket çubuğuna ayrılır; çubuklar sol üste taşınır.
+	var touch := GameState.touch_controls_enabled()
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 5)
-	box.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	box.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	_place(box, 24, -24, 24, -24)
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if touch:
+		box.set_anchors_preset(Control.PRESET_TOP_LEFT)
+		_place(box, 24, 20, 24, 20)
+	else:
+		box.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+		box.grow_vertical = Control.GROW_DIRECTION_BEGIN
+		_place(box, 24, -24, 24, -24)
 	_root.add_child(box)
 
 	_notes = VBoxContainer.new()
@@ -211,6 +221,13 @@ func _build_stats() -> void:
 		box.add_child(bar)
 	_bars.stamina.custom_minimum_size.y = 12
 	_bars.stamina.critical = 0.0
+	if touch:
+		# Bildirimler ve durum çubukların altında görünsün.
+		box.move_child(_notes, box.get_child_count() - 1)
+		box.move_child(_status, box.get_child_count() - 2)
+		_notes.alignment = BoxContainer.ALIGNMENT_BEGIN
+		for bar in _bars.values():
+			bar.custom_minimum_size.x = 200
 
 
 func _build_center() -> void:
@@ -276,9 +293,12 @@ func _build_hotbar() -> void:
 	row.add_theme_constant_override("separation", 6)
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(row)
+	var touch := GameState.touch_controls_enabled()
 	for i in Inventory.HOTBAR:
-		var slot := ItemSlotView.new(i, 58, false)
+		var slot := ItemSlotView.new(i, 64 if touch else 58, touch)
 		slot.hotkey = str(i + 1)
+		if touch:
+			slot.clicked.connect(func(index: int, _button: int) -> void: player.equipment.select(index))
 		row.add_child(slot)
 		_hotbar.append(slot)
 

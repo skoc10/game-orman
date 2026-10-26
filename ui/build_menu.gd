@@ -41,7 +41,7 @@ func close() -> void:
 	is_open = false
 	visible = false
 	player.input_locked = false
-	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	GameState.capture_mouse()
 
 
 func _choose(recipe: RecipeData) -> void:
@@ -101,4 +101,9 @@ func _build() -> void:
 	_list.add_theme_constant_override("separation", 10)
 	_list.custom_minimum_size = Vector2(620, 0)
 	v.add_child(_list)
-	v.add_child(UITheme.label(tr("B / Esc: kapat"), 14, UITheme.TEXT_DIM))
+	var close_btn := Button.new()
+	close_btn.text = tr("Kapat (B / Esc)")
+	close_btn.custom_minimum_size = Vector2(180, 44)
+	close_btn.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	close_btn.pressed.connect(close)
+	v.add_child(close_btn)

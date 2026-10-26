@@ -44,7 +44,8 @@ func _ready() -> void:
 	env.glow_enabled = true
 	env.glow_intensity = 0.7
 	env.glow_bloom = 0.05
-	env.ssao_enabled = true
+	var low := GameState.low_quality()
+	env.ssao_enabled = not low
 	env.ssao_radius = 1.2
 	env.ssao_intensity = 1.6
 
@@ -55,14 +56,14 @@ func _ready() -> void:
 	sun = DirectionalLight3D.new()
 	sun.name = "Sun"
 	sun.shadow_enabled = true
-	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
-	sun.directional_shadow_max_distance = 90.0
+	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS if low else DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
+	sun.directional_shadow_max_distance = 45.0 if low else 90.0
 	sun.light_angular_distance = 0.5
 	add_child(sun)
 
 	moon = DirectionalLight3D.new()
 	moon.name = "Moon"
-	moon.shadow_enabled = true
+	moon.shadow_enabled = not low
 	moon.directional_shadow_max_distance = 45.0
 	moon.light_color = Color(0.62, 0.72, 1.0)
 	add_child(moon)

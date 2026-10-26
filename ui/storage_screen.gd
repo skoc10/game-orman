@@ -45,7 +45,7 @@ func close() -> void:
 	visible = false
 	box = null
 	player.input_locked = false
-	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	GameState.capture_mouse()
 
 
 func _refresh() -> void:
@@ -121,5 +121,11 @@ func _build() -> void:
 			_player_grid = grid
 		else:
 			_box_grid = grid
-	v.add_child(UITheme.label(tr("Tıkla: yığını diğer tarafa taşı · E / Esc: kapat"), 14, UITheme.TEXT_DIM))
+	v.add_child(UITheme.label(tr("Dokun ya da tıkla: yığını diğer tarafa taşı"), 14, UITheme.TEXT_DIM))
+	var close_btn := Button.new()
+	close_btn.text = tr("Kapat")
+	close_btn.custom_minimum_size = Vector2(140, 44)
+	close_btn.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	close_btn.pressed.connect(close)
+	v.add_child(close_btn)
 	_fill_grid(_player_grid, _player_slots, player.inventory, _on_player_clicked)

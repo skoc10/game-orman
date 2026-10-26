@@ -45,7 +45,7 @@ func _ready() -> void:
 	_torch_light.light_color = Color(1.0, 0.68, 0.38)
 	_torch_light.light_energy = 2.2
 	_torch_light.omni_range = 13.0
-	_torch_light.shadow_enabled = true
+	_torch_light.shadow_enabled = not GameState.low_quality()
 	_torch_light.position = Vector3(0, 0.75, 0)
 	_held.add_child(_torch_light)
 	_refresh(true)
