@@ -9,7 +9,9 @@ The Forest'tan esinlendi ama **zombi, yamyam ya da gece saldırısı yok**. Tehl
 | | |
 |---|---|
 | ![Gündüz](docs/screenshots/gunduz.jpg) | ![Envanter ve üretim](docs/screenshots/envanter.jpg) |
-| ![Geyikler](docs/screenshots/geyikler.jpg) | ![Kurtlar meşale ışığında](docs/screenshots/kurtlar.jpg) |
+| ![Geyikler](docs/screenshots/geyikler.jpg) | ![Kurtlar](docs/screenshots/kurtlar.jpg) |
+| ![Ayı](docs/screenshots/ayi.jpg) | ![Mağara ağzı](docs/screenshots/magara_agzi.jpg) |
+| ![Olta ile balık avı](docs/screenshots/olta.jpg) | ![Meşaleyle mağara içi](docs/screenshots/magara_ici.jpg) |
 
 ## Özellikler
 
@@ -21,17 +23,28 @@ The Forest'tan esinlendi ama **zombi, yamyam ya da gece saldırısı yok**. Tehl
   - Suda dayanıklılık biterse boğuluyorsun.
 - **Toplama ve üretim:**
   - Yerde dal ve taş, uzun otlarda lif, çalılarda böğürtlen, ormanda mantar bulunuyor. Toplananlar birkaç gün sonra yeniden çıkıyor.
-  - Üretilebilenler: ip, taş bıçak, taş balta, mızrak, meşale, bitki bandajı ve deri giysi.
+  - E basıldığı anda çalışıyor; yerdeki eşyalara tam nişan almak gerekmiyor. E basılı tutulunca art arda toplanıyor.
+  - Büyük kayalar baltayla kırılıp taş veriyor.
+  - Üretilebilenler: ip, taş bıçak, taş balta, mızrak, meşale, bitki bandajı, deri giysi ve olta.
 - **Ağaç kesme:** Baltayla kesilen ağaç devriliyor, geriye kütük ve dal bırakıyor.
 - **Kamp ateşi:**
   - Yakıtla yanıyor; ışık ve ısı veriyor, kurtları uzak tutuyor.
   - Üstünde üç pişirme yeri var. Et pişiyor; fazla beklersen yanıyor.
   - Metal kapla su kaynatılıyor.
 - **İnşa:** Yeşil/kırmızı önizlemeyle kamp ateşi, dal barınak ve saklama sandığı kurulabiliyor. Barınakta gece uyuyup sabaha atlanıyor, gündüz dinlenip kaydediliyor.
-- **Hayvanlar:**
-  - Geyik sürüleri ürkek: eğilerek yaklaşman gerekiyor.
-  - Kurt sürüleri önce etrafında dönüyor, sonra saldırıyor. Yanan ateşin çevresine girmiyorlar, meşaleye mesafe koruyorlar. Yaralanınca kaçıyorlar.
+- **Hayvanlar:** Hepsi iki eklemli bacaklı, kaslı low-poly modellerle çiziliyor; engellerin etrafından dolaşıyorlar.
+  - **Geyik:** Sürüyle otluyor. Fark edince başını kaldırıp bakıyor, yaklaşınca sekerek ve zikzak çizerek kaçıyor; sürü aynı yöne kaçıyor, güvenli mesafede durup geri bakıyor.
+  - **Tavşan:** Açıklıklarda otluyor, keskin zikzaklarla kaçıp saklanıyor.
+  - **Kurt:** Zayıf ve uzun bacaklı. Sürüyle önce etrafında dönüyor, sonra saldırıyor; ısırıp geri çekiliyor. Ateşin çevresine girmiyor, meşaleye mesafe koruyor, yaralanınca kaçıyor.
+  - **Ayı:** Sık ormanda ve mağarada yaşıyor. Arka ayakları üstüne kalkıp kükreyerek uyarıyor; uzaklaşırsan bırakıyor, yaklaşırsan saldırıyor. Koşarak kaçılamıyor, ateşe yaklaşmıyor.
+  - **Yılan:** Otlarda ve mağaralarda kıvrılıp yatıyor; çok yaklaşınca tıslıyor, sonra zehirli ısırıyor.
+  - **Kuşlar:** Yerde gagalıyor, yaklaşınca havalanıp başka yere konuyor; kıyıda martılar dönüyor.
   - Leşi bıçakla kesince et ve deri alınıyor. Mızrak fırlatılabiliyor.
+- **Balıklar:** Gölde ve kıyıya yakın denizde balık sürüleri var. Mızrakla vurulan balık yüzeye çıkıyor. Oltayı suya atınca şamandıra batana kadar bekliyorsun, sonra E ile çekiyorsun; geç kalırsan balık kaçıyor.
+- **Mağaralar:** Yamaçlardaki kaya kemerli ağızlardan giriliyor. İçerisi meşalesiz zifiri karanlık ama rüzgarsız ve ılık.
+  - **Ayı ini:** Geniş bir odada uyuyan bir ayı ve eski bir kampçının erzakı var.
+  - **Labirent:** İç içe tüneller; öbür ucu deniz kıyısındaki ikinci bir ağızdan çıkıyor.
+  - **Yılan mağarası:** Küçük, içinde yılanlar ve biraz ganimet var.
 - **Kayıt:** Uyuyunca, duraklatma menüsünden ya da F5 ile kaydediliyor. Kesilen ağaçlar, yapılar, yerdeki eşyalar, hayvanlar ve leşler de kayda giriyor.
 - **Ses:** Rüzgar, kuşlar, cırcır böcekleri, uzaktan kurt ulumaları, ateş çıtırtısı, ayak sesleri ve balta darbeleri var. Sesler `tools/gen_sfx.gd` ile prosedürel üretiliyor.
 - **Arayüz:** Türkçe. Yeni oyuncuya bağlama göre ipucu veriyor, klavye/fare ve gamepad'i destekliyor.
@@ -65,7 +78,7 @@ godot --editor --path .
 | Koşma | Shift | Sol çubuğa bas |
 | Zıplama | Space | A |
 | Eğilme | Ctrl / C | Sağ çubuğa bas |
-| Etkileşim (basılı tutulabilir) | E | X |
+| Etkileşim / topla (basılı tutunca art arda) | E | X |
 | Vur / ye / kullan | Sol tık | RT |
 | Mızrak fırlat / inşayı iptal et | Sağ tık | LT |
 | Envanter ve üretim | Tab / I | Y |
@@ -84,7 +97,9 @@ godot --editor --path .
 5. Geyiğe eğilerek yaklaş. Mızrakla vur ya da sağ tıkla fırlat. Leşi **taş bıçakla** kes.
 6. Çiğ eti ateşte pişir, ham suyu metal kapla kaynat.
 7. Kütükleri topla, **dal barınak** kur. Gece uyuyup sabaha atla; oyun kaydedilir.
-8. Kurtlar gelince ateşin yanında kal ya da meşaleyi elinde tut.
+8. Kurtlar gelince ateşin yanında kal ya da meşaleyi elinde tut. Ayıdan koşarak kaçamazsın: kükrerse yavaşça uzaklaş.
+9. Balık için mızrak ya da olta kullan; balığı da ateşte pişir.
+10. Mağaralara meşalesiz girme. Ayı inindeki erzak değerli ama ayıyı uyandırma.
 
 ## Tarifler
 
@@ -97,6 +112,7 @@ godot --editor --path .
 | Meşale | 1 dal, 2 lif |
 | Bitki bandajı | 4 lif |
 | Deri giysi | 3 deri, 2 ip |
+| Olta | 2 dal, 1 ip |
 | **Kamp ateşi** (inşa) | 4 taş, 4 dal |
 | **Dal barınak** (inşa) | 4 kütük, 10 dal, 2 ip |
 | **Saklama sandığı** (inşa) | 3 kütük, 1 ip |
@@ -146,11 +162,11 @@ godot --headless --path . -s res://tools/gen_sfx.gd
 godot --path . -- --seed=42 --time=21.5 --campfire=cook --give=torch:1 --shot=/tmp/gece.png
 ```
 
-Diğer argümanlar: `--pos=x,z`, `--height=m`, `--yaw`, `--pitch`, `--atlake`, `--stats=can,tokluk,su,ısı`, `--animal=wolf:3`, `--place=shelter`, `--ghost=campfire`, `--inventory`, `--pause`, `--menu`, `--fpsprobe`.
+Diğer argümanlar: `--pos=x,z`, `--height=m`, `--yaw`, `--pitch`, `--atlake`, `--stats=can,tokluk,su,ısı`, `--animal=wolf:3` (deer, rabbit, bear, snake), `--place=shelter`, `--ghost=campfire`, `--fishing`, `--mouth=0`, `--cave=0`, `--inventory`, `--pause`, `--menu`, `--fpsprobe`.
 
 ### Gerçek hayvan modelleri (isteğe bağlı)
 
-Oyun, tamamı koddan üretilen yer tutucu low-poly modellerle çalışır. `assets/models/animals/` klasörüne Quaternius *Ultimate Animated Animals* paketinden (CC0) `Deer.gltf`, `Stag.gltf` ve `Wolf.gltf` dosyalarını koyarsan oyun otomatik olarak bunları kullanır. Animasyonlar isimlerinden eşlenir. Ayrıntılar için [assets/models/animals/README.md](assets/models/animals/README.md) dosyasına bak.
+Oyun, tamamı koddan üretilen yer tutucu low-poly modellerle çalışır. `assets/models/animals/` klasörüne Quaternius *Ultimate Animated Animals* paketinden (CC0) `Deer.gltf`, `Stag.gltf` ve `Wolf.gltf` dosyalarını (ayı için `Bear.gltf`) koyarsan oyun otomatik olarak bunları kullanır. Animasyonlar isimlerinden eşlenir. Ayrıntılar için [assets/models/animals/README.md](assets/models/animals/README.md) dosyasına bak.
 
 ### Dışa aktarma (macOS / Windows)
 
@@ -175,6 +191,9 @@ godot --headless --path . --export-release "Windows Desktop" export/windows/Orma
 - [ ] Ham suyu kaynat.
 - [ ] Barınak kur; gece uyu ve sabah oyunun kaydedildiğini gör.
 - [ ] Gece kurtlardan ateş ya da meşaleyle korun.
+- [ ] Tavşan ve geyiğin kaçışını izle; bir ayının uyarısını gör ve uzaklaş.
+- [ ] Oltayla ve mızrakla balık tut, pişir.
+- [ ] Meşaleyle bir mağaraya gir; labirentten kıyıya çık.
 - [ ] Oyunu kaydet, ana menüye dön, "Devam et" ile yükle.
 - [ ] Aç ya da susuz kalıp öl; ölüm ekranını ve rekoru gör.
 
