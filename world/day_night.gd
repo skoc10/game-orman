@@ -110,3 +110,12 @@ func update_now() -> void:
 	env.fog_density = lerpf(0.012, 0.0025, dl) * fog_scale
 	if water_mat:
 		water_mat.set_shader_parameter("brightness", lerpf(0.22, 1.0, dl))
+	var world := GameState.world
+	if world and world.player and world.is_underground(world.player.global_position):
+		# Mağara içi: güneş ve ay yok, ortam neredeyse karanlık.
+		sun.visible = false
+		moon.visible = false
+		env.ambient_light_color = Color(0.05, 0.05, 0.06)
+		env.ambient_light_energy = 0.35
+		env.fog_light_color = Color(0.0, 0.0, 0.0)
+		env.fog_density = 0.05

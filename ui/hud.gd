@@ -82,7 +82,8 @@ func _process(delta: float) -> void:
 	_warning.text = _warning_text(s)
 
 	_damage_flash = maxf(0.0, _damage_flash - delta * 1.6)
-	var underwater := player.camera.global_position.y < WorldGen.WATER_LEVEL
+	var cam_y := player.camera.global_position.y
+	var underwater := cam_y < WorldGen.WATER_LEVEL and cam_y > -20.0
 	_vignette_mat.set_shader_parameter("damage", _damage_flash)
 	_vignette_mat.set_shader_parameter("low_health", clampf((35.0 - s.health) / 35.0, 0.0, 1.0))
 	_vignette_mat.set_shader_parameter("nausea", 1.0 if s.is_nauseous() else 0.0)

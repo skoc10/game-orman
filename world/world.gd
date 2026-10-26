@@ -12,6 +12,7 @@ var trees: TreeField
 var vegetation: VegetationSpawner
 var resources: ResourceSpawner
 var animals: AnimalSpawner
+var caves: CaveSystem
 var hints: Hints
 var day_night: DayNight
 ## Çalışma anında oluşan ve kayıtla saklanan nesneler (yerdeki eşyalar, yapılar).
@@ -49,6 +50,11 @@ func _ready() -> void:
 	add_child(resources)
 	resources.build(gen, spawn_point)
 
+	caves = CaveSystem.new()
+	caves.name = "Caves"
+	add_child(caves)
+	caves.build(gen, spawn_point, resources)
+
 	dynamic_root = Node3D.new()
 	dynamic_root.name = "Dynamic"
 	add_child(dynamic_root)
@@ -78,6 +84,7 @@ func _ready() -> void:
 		player.teleport(spawn_point + Vector3.UP * 0.2, rad_to_deg(atan2(-to_lake.x, -to_lake.z)))
 		_spawn_camp_loot()
 		animals.populate(spawn_point)
+		caves.populate(animals, self)
 	else:
 		_apply_save(save)
 		GameState.pending_load = {}
@@ -189,6 +196,29 @@ func sleep_until_morning() -> void:
 		await hud.fade_to(0.0, 1.2).finished
 	player.input_locked = false
 	player.notify(tr("%d. gün başladı. Oyun kaydedildi.") % TimeOfDay.day)
+
+
+## Mağara ağızları arasında geçiş: ekran kararır, oyuncu karşı tarafa geçer.
+func travel(target: Vector3, yaw_deg: float) -> void:
+	if player.input_locked:
+		return
+	player.input_locked = true
+	var hud := get_node_or_null("HUD")
+	if hud:
+		await hud.fade_to(1.0, 0.45).finished
+	player.teleport(target, yaw_deg, 0.0)
+	await get_tree().physics_frame
+	if hud:
+		await hud.fade_to(0.0, 0.6).finished
+	player.input_locked = false
+	var cave := caves.cave_at(player.global_position)
+	if cave:
+		player.notify(tr("%s. İçerisi zifiri karanlık.") % cave.display_name())
+
+
+## Oyuncu bir mağaranın içinde mi?
+func is_underground(p: Vector3) -> bool:
+	return p.y < CaveSystem.DEPTH * 0.5
 
 
 func rest_and_save() -> void:

@@ -70,6 +70,17 @@ func on_world_ready(world: Node) -> void:
 			player.inventory.set_slot(0, {"id": "fishing_rod", "count": 1, "dur": 25.0})
 			player.equipment.select(0)
 			player.fishing.cast.call_deferred(Vector3(stand.x, 0, stand.y) - Vector3(dir.x, 0, dir.y) * 6.0)
+	if args.has("mouth"):
+		# --mouth=N: N. mağara ağzının önünde, ağza bakarak dur.
+		var m: CaveMouth = world.caves.mouths()[int(args.mouth)]
+		var fwd3 := -m.global_transform.basis.z
+		var stand3 := m.global_position + fwd3 * 7.0
+		stand3.y = world.gen.height_at(stand3.x, stand3.z) + 0.1
+		player.teleport(stand3, rad_to_deg(atan2(fwd3.x, fwd3.z)), 8.0)
+	if args.has("cave"):
+		# --cave=N: N. mağaranın girişine geç.
+		var cave: Cave = world.caves.caves[int(args.cave)]
+		player.teleport(cave.entrance_point() + Vector3(1.6, 0.1, 1.6), float(args.get("caveyaw", "225")), 0.0)
 	if args.has("yaw") or args.has("pitch"):
 		player.teleport(player.global_position, float(args.get("yaw", rad_to_deg(player.rotation.y))), float(args.get("pitch", "0")))
 	if args.has("stats"):
@@ -164,6 +175,10 @@ func _capture(path: String, frames: int) -> void:
 		if args.has("verbose"):
 			var vc := get_viewport().get_camera_3d()
 			print("Aktif kamera: ", vc.get_path(), " açı: ", vc.global_rotation_degrees, " konum: ", vc.global_position)
+			var dn: DayNight = world.day_night
+			print("Ortam: ", dn.env.ambient_light_color, " x", dn.env.ambient_light_energy, " sis ", dn.env.fog_density, " güneş ", dn.sun.visible, " ay ", dn.moon.visible, " yeraltı ", world.is_underground(pp))
+			for m in world.caves.mouths():
+				print("  ağız ", m.global_position, " oyuncuya ", m.global_position.distance_to(pp))
 			print("Kamera açısı: ", world.player.camera.global_rotation_degrees, " baş: ", world.player.head.rotation_degrees, " gövde: ", world.player.rotation_degrees)
 			for a in world.get_tree().get_nodes_in_group("animal"):
 				if a.global_position.distance_to(pp) < 40.0:

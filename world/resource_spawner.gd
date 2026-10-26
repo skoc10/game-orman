@@ -66,6 +66,15 @@ func _chance(gen: WorldGen, kind: String, p: Vector2) -> float:
 	return 0.6
 
 
+## Mağara gibi arazi dışı yerlere kaynak ekler; kimlik sırası her açılışta aynıdır.
+func add_at(kind: String, pos: Vector3, yaw: float) -> void:
+	var node := ResourceNode.new()
+	node.setup(nodes.size(), kind, Transform3D(Basis(Vector3.UP, yaw), pos))
+	node.harvested.connect(_on_harvested)
+	add_child(node)
+	nodes.append(node)
+
+
 func _add(gen: WorldGen, kind: String, p: Vector2, yaw: float) -> void:
 	var node := ResourceNode.new()
 	var pos := Vector3(p.x, gen.height_at(p.x, p.y) - 0.02, p.y)

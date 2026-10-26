@@ -105,7 +105,8 @@ func _physics_process(delta: float) -> void:
 		return
 
 	var was_swimming := is_swimming
-	is_swimming = global_position.y < WorldGen.WATER_LEVEL - SWIM_DEPTH
+	# Mağaralar suyun çok altındadır; orada yüzülmez.
+	is_swimming = global_position.y < WorldGen.WATER_LEVEL - SWIM_DEPTH and global_position.y > -20.0
 	if is_swimming and not was_swimming:
 		Sfx.play("splash", -6.0)
 	_update_crouch(delta, not input_locked and Input.is_action_pressed("crouch") and not is_swimming)

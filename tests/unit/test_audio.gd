@@ -5,7 +5,7 @@ const SOUNDS := [
 	"pickup", "eat", "drink", "craft", "ignite", "splash", "tree_fall", "bite",
 	"deer_alarm", "wolf_growl", "wolf_howl", "ui_click", "bear_roar", "snake_hiss", "bird_takeoff",
 ]
-const LOOPS := ["fire_loop", "wind_loop", "birds_loop", "crickets_loop"]
+const LOOPS := ["fire_loop", "wind_loop", "birds_loop", "crickets_loop", "cave_loop"]
 
 
 func test_all_sounds_exist_and_have_audio() -> void:

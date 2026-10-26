@@ -173,6 +173,7 @@ func save_state() -> Dictionary:
 		"pos": GameState.vec3_to_arr(global_position), "yaw": rotation.y,
 		"home": GameState.vec3_to_arr(home), "health": health,
 		"died_day": died_day, "night": is_in_group("night_only"),
+		"indoor": indoor, "wander": wander_radius,
 	}
 
 
@@ -180,6 +181,8 @@ func load_state(d: Dictionary) -> void:
 	health = float(d.get("health", max_health))
 	home = GameState.arr_to_vec3(d.get("home"), Vector3.ZERO)
 	died_day = int(d.get("died_day", -1))
+	indoor = bool(d.get("indoor", false))
+	wander_radius = float(d.get("wander", wander_radius))
 	if bool(d.get("night", false)):
 		add_to_group("night_only")
 

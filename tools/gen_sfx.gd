@@ -35,6 +35,7 @@ func _init() -> void:
 	_save("wind_loop", _loopify(_wind(8.5), 0.5), true)
 	_save("birds_loop", _loopify(_birds(12.4), 0.4), true)
 	_save("crickets_loop", _loopify(_crickets(6.3), 0.3), true)
+	_save("cave_loop", _loopify(_cave(9.4), 0.4), true)
 	print("Sesler üretildi: ", OUT)
 	quit()
 
@@ -376,6 +377,24 @@ func _birds(dur: float) -> PackedFloat32Array:
 				phase += TAU * f / RATE
 				out[i] += sin(phase) * sin(PI * k) * amp * (0.85 + 0.15 * sin(TAU * 30.0 * k))
 		t += rng.randf_range(0.6, 1.8)
+	return out
+
+
+## Mağara: alçak uğultu ve arada su damlaları.
+func _cave(dur: float) -> PackedFloat32Array:
+	rng.seed = 24
+	var n := int(RATE * dur)
+	var out := _lowpass(_noise(n), 120.0)
+	for i in n:
+		out[i] *= 0.8
+	var t := 0.4
+	while t < dur - 0.5:
+		var start := int(t * RATE)
+		var f := rng.randf_range(900.0, 1700.0)
+		for i in range(start, mini(n, start + int(RATE * 0.25))):
+			var k := float(i - start) / RATE
+			out[i] += sin(TAU * f * k * (1.0 + k * 2.0)) * exp(-k * 25.0) * 0.6
+		t += rng.randf_range(0.8, 2.4)
 	return out
 
 

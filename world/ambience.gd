@@ -6,6 +6,7 @@ extends Node
 var _wind: AudioStreamPlayer
 var _birds: AudioStreamPlayer
 var _crickets: AudioStreamPlayer
+var _cave: AudioStreamPlayer
 var _howl_timer := 20.0
 
 
@@ -13,19 +14,23 @@ func _ready() -> void:
 	_wind = _loop("wind_loop")
 	_birds = _loop("birds_loop")
 	_crickets = _loop("crickets_loop")
+	_cave = _loop("cave_loop")
 
 
 func _exit_tree() -> void:
 	# Çalan döngüler kapanışta durdurulmazsa motor çıkışta sızıntı uyarısı verir.
-	for p in [_wind, _birds, _crickets]:
+	for p in [_wind, _birds, _crickets, _cave]:
 		p.stop()
 
 
 func _process(delta: float) -> void:
 	var dl := TimeOfDay.daylight()
-	_wind.volume_db = -17.0
-	_birds.volume_db = linear_to_db(maxf(dl, 0.001)) - 13.0
-	_crickets.volume_db = linear_to_db(maxf(1.0 - dl, 0.001)) - 16.0
+	var world := GameState.world
+	var under: bool = world != null and world.is_underground(world.player.global_position)
+	_wind.volume_db = -60.0 if under else -17.0
+	_birds.volume_db = -60.0 if under else linear_to_db(maxf(dl, 0.001)) - 13.0
+	_crickets.volume_db = -60.0 if under else linear_to_db(maxf(1.0 - dl, 0.001)) - 16.0
+	_cave.volume_db = -14.0 if under else -60.0
 	if TimeOfDay.is_night():
 		_howl_timer -= delta
 		if _howl_timer <= 0.0:
