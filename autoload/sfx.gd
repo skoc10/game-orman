@@ -82,3 +82,11 @@ func _free_3d() -> AudioStreamPlayer3D:
 		_pool3d.append(p)
 		return p
 	return _pool3d[0]
+
+
+func _exit_tree() -> void:
+	# Kapanışta çalmaya devam eden sesler motor çıkışında uyarı bırakır.
+	for p in _pool3d:
+		p.stop()
+	for p in _pool2d:
+		p.stop()

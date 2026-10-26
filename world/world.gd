@@ -81,6 +81,7 @@ func _ready() -> void:
 	else:
 		_apply_save(save)
 		GameState.pending_load = {}
+	animals.spawn_birds(spawn_point)
 	print("Dünya hazır: tohum %d, %d ağaç, %d ms" % [seed_value, trees.count(), Time.get_ticks_msec() - started])
 
 	TimeOfDay.running = true

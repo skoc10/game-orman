@@ -9,6 +9,8 @@ const CAUSE_TEXT := {
 	"düşme": "Yüksekten düştün.",
 	"zehirlenme": "Zehirlendin.",
 	"kurt": "Kurtlar seni parçaladı.",
+	"ayı": "Bir ayı seni parçaladı.",
+	"yılan": "Yılan zehri seni öldürdü.",
 }
 
 var cause := ""

@@ -28,6 +28,9 @@ func _init() -> void:
 	_save("wolf_growl", _wolf_growl())
 	_save("wolf_howl", _wolf_howl())
 	_save("ui_click", _ui_click())
+	_save("bear_roar", _bear_roar())
+	_save("snake_hiss", _snake_hiss())
+	_save("bird_takeoff", _bird_takeoff())
 	_save("fire_loop", _loopify(_fire(4.3), 0.3), true)
 	_save("wind_loop", _loopify(_wind(8.5), 0.5), true)
 	_save("birds_loop", _loopify(_birds(12.4), 0.4), true)
@@ -260,6 +263,46 @@ func _wolf_howl() -> PackedFloat32Array:
 		var tone := sin(phase) + sin(phase * 2.0) * 0.28 + sin(phase * 3.0) * 0.1
 		var env := smoothstep(0.0, 0.35, t) * (1.0 - smoothstep(dur - 0.7, dur, t))
 		out[i] = (tone * 0.75 + breath[i] * 0.6) * env
+	return out
+
+
+func _bear_roar() -> PackedFloat32Array:
+	rng.seed = 30
+	var n := int(RATE * 1.8)
+	var src := _lowpass(_noise(n), 450.0)
+	var out := PackedFloat32Array()
+	out.resize(n)
+	var phase := 0.0
+	for i in n:
+		var t := float(i) / RATE
+		var f := lerpf(140.0, 85.0, t / 1.8)
+		phase += TAU * f / RATE
+		var rough := 0.6 + 0.4 * sin(TAU * 22.0 * t)
+		var env := smoothstep(0.0, 0.2, t) * (1.0 - smoothstep(1.2, 1.8, t))
+		out[i] = (src[i] * 3.2 + sin(phase) * 0.5 + sin(phase * 2.0) * 0.25) * rough * env
+	return out
+
+
+func _snake_hiss() -> PackedFloat32Array:
+	rng.seed = 31
+	var n := int(RATE * 0.9)
+	var s := _highpass(_noise(n), 3500.0)
+	for i in n:
+		var t := float(i) / RATE
+		s[i] *= smoothstep(0.0, 0.08, t) * (1.0 - smoothstep(0.6, 0.9, t))
+	return s
+
+
+func _bird_takeoff() -> PackedFloat32Array:
+	rng.seed = 32
+	var n := int(RATE * 0.7)
+	var src := _lowpass(_noise(n), 900.0)
+	var out := PackedFloat32Array()
+	out.resize(n)
+	for i in n:
+		var t := float(i) / RATE
+		var flap := pow(maxf(sin(TAU * 13.0 * t), 0.0), 3.0)
+		out[i] = src[i] * flap * (1.0 - t / 0.7)
 	return out
 
 

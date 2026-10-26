@@ -1,9 +1,21 @@
 class_name AnimalSpawner
 extends Node3D
-## Geyik sürülerini ve kurt sürülerini yerleştirir. Geceleri oyuncunun çevresine
-## ek kurt sürüleri gelir; sabah uzaktakiler çekilir. Azalan geyikler yenilenir.
+## Hayvanları yerleştirir: geyik ve kurt sürüleri, tavşanlar, ayılar, yılanlar
+## ve kuş sürüleri. Geceleri oyuncunun çevresine ek kurt sürüleri gelir; sabah
+## uzaktakiler çekilir. Azalan geyik ve tavşanlar yenilenir.
 
-const SPECIES := {"deer": preload("res://animals/deer.gd"), "wolf": preload("res://animals/wolf.gd")}
+const SPECIES := {
+	"deer": preload("res://animals/deer.gd"),
+	"wolf": preload("res://animals/wolf.gd"),
+	"rabbit": preload("res://animals/rabbit.gd"),
+	"bear": preload("res://animals/bear.gd"),
+	"snake": preload("res://animals/snake.gd"),
+}
+const RABBITS := 10
+const BEARS := 2
+const SNAKES := 12
+const SONGBIRD_FLOCKS := 7
+const GULL_FLOCKS := 3
 const NIGHT_MIN_DIST := 70.0
 const NIGHT_MAX_DIST := 110.0
 
@@ -31,6 +43,46 @@ func populate(spawn: Vector3) -> void:
 		var p := _random_spot(spawn, 120.0, 400.0, false)
 		if p != Vector3.INF:
 			spawn_pack(p, 2, false)
+	for i in RABBITS:
+		var p := _random_spot(spawn, 25.0, 400.0, true)
+		if p != Vector3.INF:
+			spawn_animal("rabbit", p)
+	for i in BEARS:
+		var p := _forest_spot(spawn, 140.0)
+		if p != Vector3.INF:
+			spawn_animal("bear", p)
+	for i in SNAKES:
+		var p := _random_spot(spawn, 35.0, 400.0, false)
+		if p != Vector3.INF:
+			spawn_animal("snake", p)
+
+
+## Kuş sürüleri kayda girmez; her açılışta yeniden yerleşir.
+func spawn_birds(spawn: Vector3) -> void:
+	for i in SONGBIRD_FLOCKS:
+		var p := _random_spot(spawn, 20.0, 300.0, true)
+		if p != Vector3.INF:
+			var flock := BirdFlock.new()
+			flock.count = rng.randi_range(3, 6)
+			flock.position = p
+			add_child(flock)
+	for i in GULL_FLOCKS:
+		var a := rng.randf() * TAU
+		var r := WorldGen.ISLAND_RADIUS * 0.95
+		var flock := BirdFlock.new()
+		flock.kind = BirdFlock.Kind.GULL
+		flock.count = rng.randi_range(2, 4)
+		flock.position = Vector3(cos(a) * r, 0, sin(a) * r)
+		add_child(flock)
+
+
+## Sık ormanda, oyuncudan uzak bir nokta (ayı inleri için).
+func _forest_spot(around: Vector3, min_d: float) -> Vector3:
+	for i in 80:
+		var p := _random_spot(around, min_d, 400.0, false)
+		if p != Vector3.INF and gen.forest_density(p.x, p.z) > 0.6:
+			return p
+	return _random_spot(around, min_d, 400.0, false)
 
 
 func spawn_animal(species: String, pos: Vector3) -> AnimalBase:
@@ -124,6 +176,11 @@ func _on_new_day(_day: int) -> void:
 		var p := _random_spot(player.global_position, 120.0, 400.0, false)
 		if p != Vector3.INF:
 			spawn_pack(p, 2, false)
+	if get_tree().get_nodes_in_group("rabbit").size() < RABBITS / 2:
+		for i in 3:
+			var p := _random_spot(player.global_position, 60.0, 400.0, true)
+			if p != Vector3.INF:
+				spawn_animal("rabbit", p)
 
 
 ## Oyuncudan min..max uzaklıkta yürünebilir bir nokta; bulunamazsa Vector3.INF.

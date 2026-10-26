@@ -216,3 +216,76 @@ func test_herd_flees_in_same_direction() -> void:
 	await wait_physics_frames(1)
 	a.take_hit(5.0, player)
 	assert_gt(b._flee_dir.dot(Vector3(1, 0, 0)), 0.7, "sürü aynı yöne kaçmalı")
+
+
+func test_new_species_are_populated() -> void:
+	assert_gt(get_tree().get_nodes_in_group("rabbit").size(), 3)
+	assert_gt(get_tree().get_nodes_in_group("bear").size(), 0)
+	assert_gt(get_tree().get_nodes_in_group("snake").size(), 5)
+	assert_gt(get_tree().get_nodes_in_group("birds").size(), 5)
+
+
+func test_rabbit_zigzags_away() -> void:
+	var rabbit := _spawn("rabbit", Vector3(6, 0, 0)) as Rabbit
+	await wait_physics_frames(1)
+	rabbit.think(0.1, player, 6.0)
+	assert_eq(rabbit.state, AnimalBase.State.FLEE)
+	var first := rabbit._zig_angle
+	rabbit.think(0.8, player, 7.0)
+	assert_ne(rabbit._zig_angle, first, "zikzak yönü değişmeli")
+
+
+func test_bear_warns_then_charges_and_swipes() -> void:
+	var bear := _spawn("bear", Vector3(10, 0, 0)) as Bear
+	await wait_physics_frames(1)
+	bear.think(0.1, player, 10.0)
+	assert_eq(bear.state, AnimalBase.State.ALERT, "önce kalkıp uyarmalı")
+	bear._state_time = 2.0
+	bear.think(0.1, player, 9.0)
+	assert_eq(bear.state, AnimalBase.State.CHASE)
+	bear.think(0.1, player, 2.0)
+	assert_eq(bear.state, AnimalBase.State.ATTACK)
+	var hp := player.stats.health
+	bear.think(0.1, player, 2.0)
+	assert_lt(player.stats.health, hp - 15.0, "ayı pençesi ağır vurmalı")
+
+
+func test_bear_backs_off_when_player_leaves() -> void:
+	var bear := _spawn("bear", Vector3(10, 0, 0)) as Bear
+	await wait_physics_frames(1)
+	bear.think(0.1, player, 10.0)
+	bear._state_time = 2.0
+	bear.think(0.1, player, 30.0)
+	assert_eq(bear.state, AnimalBase.State.WANDER)
+
+
+func test_sleeping_bear_wakes_only_when_close() -> void:
+	var bear := _spawn("bear", Vector3(8, 0, 0)) as Bear
+	await wait_physics_frames(1)
+	bear.sleeping = true
+	bear.think(0.1, player, 8.0)
+	assert_true(bear.sleeping, "uzaktan sessizce geçilebilmeli")
+	bear.think(0.1, player, 4.0)
+	assert_false(bear.sleeping)
+
+
+func test_snake_hisses_then_bites_with_venom() -> void:
+	var snake := _spawn("snake", Vector3(3, 0, 0)) as Snake
+	await wait_physics_frames(1)
+	snake.think(0.1, player, 3.0)
+	assert_eq(snake.state, AnimalBase.State.ALERT)
+	snake._state_time = 1.0
+	var hp := player.stats.health
+	snake.think(0.1, player, 2.0)
+	assert_lt(player.stats.health, hp)
+	assert_true(player.stats.is_nauseous(), "ısırık zehirli olmalı")
+	assert_eq(snake.state, AnimalBase.State.RETREAT)
+
+
+func test_birds_take_off_when_approached() -> void:
+	var flock := BirdFlock.new()
+	flock.position = player.global_position + Vector3(5, 0, 0)
+	world.animals.add_child(flock)
+	await wait_process_frames(2)
+	assert_eq(flock.mode, BirdFlock.Mode.FLYING)
+	flock.queue_free()

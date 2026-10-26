@@ -15,6 +15,8 @@ const TEXTS := {
 	"canteen": "Matarayı elinde tutup suya bakarak doldur. Metal kapla suyu ateşte kaynatırsan güvenli olur.",
 	"wolves": "Kurtlar! Ateşin yanında kal ya da meşaleyi elinde tut. Yalnız kalırsan mızrakla savun.",
 	"shelter": "Barınak kurarsan geceyi uyuyarak geçirebilir ve oyunu kaydedebilirsin.",
+	"bear": "Ayı! Ondan koşarak kaçamazsın. Ayağa kalkıp kükrerse yavaşça uzaklaş; ateşe yaklaşmaz.",
+	"snake": "Yılan! Tıslıyorsa geri çekil; ısırığı zehirlidir.",
 }
 
 var shown := {}
@@ -50,11 +52,20 @@ func _next(p: Player) -> String:
 		"canteen": inv.has("canteen"),
 		"wolves": _wolf_near(p),
 		"shelter": inv.has("log", 4),
+		"bear": _near(p, "bear", 35.0),
+		"snake": _near(p, "snake", 8.0),
 	}
-	for id in ["start", "dusk", "wolves", "thirst", "hunger", "craft", "axe", "meat", "canteen", "shelter"]:
+	for id in ["start", "bear", "snake", "dusk", "wolves", "thirst", "hunger", "craft", "axe", "meat", "canteen", "shelter"]:
 		if not shown.has(id) and conditions[id]:
 			return id
 	return ""
+
+
+func _near(p: Player, group: String, radius: float) -> bool:
+	for a in get_tree().get_nodes_in_group(group):
+		if a.is_alive() and a.global_position.distance_to(p.global_position) < radius:
+			return true
+	return false
 
 
 func _wolf_near(p: Player) -> bool:
