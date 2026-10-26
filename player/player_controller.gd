@@ -51,7 +51,9 @@ var _warmth_target := 80.0
 
 
 func _ready() -> void:
-	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	# Dokunmatik cihazda fare kilitlenmez (tarayıcı da izin vermez).
+	if not GameState.touch_controls_enabled():
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	camera.fov = float(GameState.settings.fov)
 	rng.randomize()
 	interaction = Interaction.new()
