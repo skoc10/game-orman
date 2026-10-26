@@ -6,6 +6,11 @@ extends StaticBody3D
 var item_id := ""
 var count := 1
 var dur := -1.0
+## Su yüzeyinde yüzen eşya (vurulan balık) hafifçe dalgalanır.
+var floating := false:
+	set(v):
+		floating = v
+		set_process(v)
 
 var _shape: CollisionShape3D
 
@@ -21,6 +26,7 @@ static func create(p_id: String, p_count: int, pos: Vector3, p_dur := -1.0, yaw 
 
 func _ready() -> void:
 	add_to_group("persist_dynamic")
+	floating = floating or (position.y <= WorldGen.WATER_LEVEL + 0.05 and item_id.begins_with("fish"))
 	collision_layer = 4
 	collision_mask = 0
 	_shape = CollisionShape3D.new()
@@ -34,10 +40,15 @@ func _ready() -> void:
 	mi.visibility_range_end = 80.0
 	var item := ItemDB.get_item(item_id)
 	# Uzun eşyalar yere yatırılır.
-	if item and item_id in ["stick", "log", "axe", "spear", "torch", "knife", "fiber"]:
+	if item and item_id in ["stick", "log", "axe", "spear", "torch", "knife", "fiber", "fishing_rod"]:
 		mi.rotation.z = PI * 0.5
 		mi.position.y = 0.18 if item_id == "log" else 0.04
 	add_child(mi)
+
+
+func _process(_delta: float) -> void:
+	if floating:
+		position.y = WorldGen.WATER_LEVEL - 0.05 + sin(Time.get_ticks_msec() * 0.002 + position.x) * 0.04
 
 
 func get_interaction(player: Player, _shape_idx: int) -> Dictionary:

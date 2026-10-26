@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://crafting/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = "fish_raw"
+display_name = "Çiğ balık"
+description = "Gölden ya da denizden tutulmuş balık. Pişirmeden yemek mideni bozabilir."
+category = 1
+max_stack = 6
+color = Color(0.62, 0.7, 0.74, 1)
+abbr = "Bç"
+hunger = 8.0
+nausea_chance = 0.35
+nausea_duration = 30.0
+cooks_into = "fish_cooked"
+burns_into = "meat_burnt"

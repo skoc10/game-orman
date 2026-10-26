@@ -57,6 +57,19 @@ func on_world_ready(world: Node) -> void:
 		player.debug_fly = true
 	if args.has("atlake"):
 		_place_at_lake(world, player)
+	if args.has("fishing"):
+		# Göldeki ilk sürünün yanına geçip oltayı atar.
+		var schools := world.get_tree().get_nodes_in_group("fish_school").filter(func(n: Node) -> bool: return not n.sea)
+		if not schools.is_empty():
+			var sp: Vector3 = schools[0].global_position
+			var dir := (Vector2(world.spawn_point.x, world.spawn_point.z) - Vector2(sp.x, sp.z)).normalized()
+			var stand := Vector2(sp.x, sp.z)
+			while world.gen.height_at(stand.x, stand.y) < 0.3:
+				stand += dir * 0.5
+			player.teleport(Vector3(stand.x, world.gen.height_at(stand.x, stand.y) + 0.1, stand.y), rad_to_deg(atan2(dir.x, dir.y)), -30.0)
+			player.inventory.set_slot(0, {"id": "fishing_rod", "count": 1, "dur": 25.0})
+			player.equipment.select(0)
+			player.fishing.cast.call_deferred(Vector3(stand.x, 0, stand.y) - Vector3(dir.x, 0, dir.y) * 6.0)
 	if args.has("yaw") or args.has("pitch"):
 		player.teleport(player.global_position, float(args.get("yaw", rad_to_deg(player.rotation.y))), float(args.get("pitch", "0")))
 	if args.has("stats"):

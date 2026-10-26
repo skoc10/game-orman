@@ -37,7 +37,7 @@ void fragment() {
 	col = mix(col, foam_color.rgb, foam * 0.5);
 
 	ALBEDO = col * brightness;
-	ALPHA = clamp(mix(0.55, 0.93, t) + foam * 0.3, 0.0, 1.0);
+	ALPHA = clamp(mix(0.5, 0.86, t) + foam * 0.3, 0.0, 1.0);
 	ROUGHNESS = 0.08;
 	SPECULAR = 0.6;
 }

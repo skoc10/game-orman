@@ -24,6 +24,7 @@ var inventory := Inventory.new()
 var interaction: Interaction
 var equipment: Equipment
 var build: BuildSystem
+var fishing: Fishing
 var rng := RandomNumberGenerator.new()
 
 var is_sprinting := false
@@ -63,6 +64,10 @@ func _ready() -> void:
 	build.name = "BuildSystem"
 	build.player = self
 	add_child(build)
+	fishing = Fishing.new()
+	fishing.name = "Fishing"
+	fishing.player = self
+	add_child(fishing)
 	stats.damaged.connect(_on_damaged)
 	stats.died.connect(_on_died)
 	landed.connect(_on_landed)

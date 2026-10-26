@@ -114,7 +114,7 @@ func use_primary() -> void:
 		if _eat_cooldown <= 0.0 and Input.is_action_just_pressed("attack"):
 			_consume(item)
 		return
-	if item and item.category == ItemData.Category.CONTAINER:
+	if item and (item.category == ItemData.Category.CONTAINER or item.id == "fishing_rod"):
 		return
 	_swing(item)
 

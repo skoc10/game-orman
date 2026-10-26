@@ -17,6 +17,7 @@ const TEXTS := {
 	"shelter": "Barınak kurarsan geceyi uyuyarak geçirebilir ve oyunu kaydedebilirsin.",
 	"bear": "Ayı! Ondan koşarak kaçamazsın. Ayağa kalkıp kükrerse yavaşça uzaklaş; ateşe yaklaşmaz.",
 	"snake": "Yılan! Tıslıyorsa geri çekil; ısırığı zehirlidir.",
+	"fish": "Suda balıklar var! Mızrakla vurabilir ya da 2 dal ve 1 ipten olta yapabilirsin.",
 }
 
 var shown := {}
@@ -54,8 +55,9 @@ func _next(p: Player) -> String:
 		"shelter": inv.has("log", 4),
 		"bear": _near(p, "bear", 35.0),
 		"snake": _near(p, "snake", 8.0),
+		"fish": _fish_near(p),
 	}
-	for id in ["start", "bear", "snake", "dusk", "wolves", "thirst", "hunger", "craft", "axe", "meat", "canteen", "shelter"]:
+	for id in ["start", "bear", "snake", "dusk", "wolves", "thirst", "hunger", "craft", "axe", "meat", "canteen", "fish", "shelter"]:
 		if not shown.has(id) and conditions[id]:
 			return id
 	return ""
@@ -64,6 +66,13 @@ func _next(p: Player) -> String:
 func _near(p: Player, group: String, radius: float) -> bool:
 	for a in get_tree().get_nodes_in_group(group):
 		if a.is_alive() and a.global_position.distance_to(p.global_position) < radius:
+			return true
+	return false
+
+
+func _fish_near(p: Player) -> bool:
+	for s in get_tree().get_nodes_in_group("fish_school"):
+		if s.global_position.distance_to(p.global_position) < 15.0:
 			return true
 	return false
 

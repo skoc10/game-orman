@@ -228,6 +228,13 @@ static func _make_item(id: String) -> ArrayMesh:
 				[box(Vector3(0.18, 0.1, 0.05)), at(Vector3(0.06, 0.56, 0)), stone_mat],
 				[box(Vector3(0.05, 0.12, 0.06)), at(Vector3(0.0, 0.56, 0)), flat_material(Color(0.78, 0.66, 0.45))],
 			])
+		"fish_raw", "fish_cooked":
+			return fish_mesh(c, 0.32)
+		"fishing_rod":
+			return combine([
+				[cylinder(0.012, 0.022, 1.5, 5), at(Vector3(0, 0.75, 0)), wood],
+				[cylinder(0.03, 0.03, 0.05, 8), at(Vector3(0, 0.25, 0.03), Vector3(PI * 0.5, 0, 0)), flat_material(Color(0.3, 0.3, 0.32))],
+			])
 		"spear":
 			return combine([
 				[cylinder(0.02, 0.025, 1.6, 6), at(Vector3(0, 0.8, 0)), wood],
@@ -239,6 +246,19 @@ static func _make_item(id: String) -> ArrayMesh:
 				[cylinder(0.05, 0.04, 0.1, 6), at(Vector3(0, 0.52, 0)), flat_material(Color(0.25, 0.18, 0.12))],
 			])
 	return combine([[box(Vector3(0.2, 0.2, 0.2)), at(Vector3(0, 0.1, 0)), mat]])
+
+
+## Low-poly balık: gövde, kuyruk yüzgeci ve sırt yüzgeci. Burun -Z yönündedir.
+static func fish_mesh(color: Color, length := 0.35) -> ArrayMesh:
+	return _cached("fish_%s_%.2f" % [color.to_html(), length], func() -> ArrayMesh:
+		var body := flat_material(color)
+		var fin := flat_material(color.darkened(0.3))
+		var l := length
+		return combine([
+			[sphere(0.5, 7, 4), at(Vector3(0, 0, 0), Vector3.ZERO, Vector3(l * 0.28, l * 0.34, l)), body],
+			[cylinder(0.0, l * 0.22, l * 0.3, 4), Transform3D(Basis(Vector3.RIGHT, PI * 0.5).scaled(Vector3(0.25, 1.0, 1.0)), Vector3(0, 0, l * 0.62)), fin],
+			[box(Vector3(l * 0.03, l * 0.16, l * 0.3)), at(Vector3(0, l * 0.18, -l * 0.02)), fin],
+		]))
 
 
 ## Çalı gövdesi (meyvesiz). Meyveler ayrı mesh: bush_berries().

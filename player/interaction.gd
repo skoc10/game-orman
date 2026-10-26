@@ -73,6 +73,10 @@ func _physics_process(delta: float) -> void:
 
 ## Bakılan hedefi bulur, current'ı günceller ve etkileşim sözlüğünü döndürür.
 func _scan() -> Dictionary:
+	if player.fishing and player.fishing.active:
+		var fishing_info := player.fishing.interaction_info()
+		_set_current(fishing_info, "fishing:" + str(fishing_info.text))
+		return fishing_info
 	var info := {}
 	var key := ""
 	var ray := player.interact_ray
@@ -149,7 +153,9 @@ func _water_interaction() -> Dictionary:
 	if dir.y > -0.05:
 		return {}
 	var t := (WorldGen.WATER_LEVEL - from.y) / dir.y
-	if t < 0.0 or t > WATER_REACH:
+	var held_rod := player.equipment.held_item()
+	var reach := 9.0 if held_rod and held_rod.id == "fishing_rod" else WATER_REACH
+	if t < 0.0 or t > reach:
 		return {}
 	var space := player.get_world_3d().direct_space_state
 	var query := PhysicsRayQueryParameters3D.create(from, from + dir * t, 1)
@@ -160,6 +166,9 @@ func _water_interaction() -> Dictionary:
 	var gen: WorldGen = world.gen
 	if gen.height_at(p.x, p.z) > WorldGen.WATER_LEVEL - 0.05:
 		return {}
+	var rod := player.equipment.held_item()
+	if rod and rod.id == "fishing_rod":
+		return {"text": tr("Oltayı at"), "action": player.fishing.cast.bind(p)}
 	if gen.is_fresh_water(p.x, p.z):
 		var held := player.equipment.held_item()
 		if held and held.id in ["canteen", "water_raw", "water_clean"] and player.canteen_space() > 0:

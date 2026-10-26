@@ -57,6 +57,36 @@ func populate(spawn: Vector3) -> void:
 			spawn_animal("snake", p)
 
 
+## Balık sürüleri: gölde ve kıyıya yakın denizde. Kayda girmez; her gün eksilenler tamamlanır.
+func spawn_fish() -> void:
+	for school in get_tree().get_nodes_in_group("fish_school"):
+		school.queue_free()
+	var c := gen.lake_center
+	for i in 2:
+		var p := c + Vector2(rng.randf_range(-6, 6), rng.randf_range(-6, 6))
+		_add_school(Vector3(p.x, 0, p.y), false)
+	var placed := 0
+	for i in 200:
+		if placed >= 6:
+			break
+		var a := rng.randf() * TAU
+		var r := rng.randf_range(WorldGen.ISLAND_RADIUS * 0.9, WorldGen.ISLAND_RADIUS * 1.1)
+		var h := gen.height_at(cos(a) * r, sin(a) * r)
+		if h < -1.2 and h > -6.5:
+			_add_school(Vector3(cos(a) * r, 0, sin(a) * r), true)
+			placed += 1
+
+
+func _add_school(pos: Vector3, sea: bool) -> void:
+	var school := FishSchool.new()
+	school.sea = sea
+	school.count = rng.randi_range(4, 7)
+	school.radius = rng.randf_range(3.5, 6.0)
+	school.floor_y = gen.height_at(pos.x, pos.z)
+	school.position = Vector3(pos.x, WorldGen.WATER_LEVEL - 0.8, pos.z)
+	add_child(school)
+
+
 ## Kuş sürüleri kayda girmez; her açılışta yeniden yerleşir.
 func spawn_birds(spawn: Vector3) -> void:
 	for i in SONGBIRD_FLOCKS:
@@ -176,6 +206,7 @@ func _on_new_day(_day: int) -> void:
 		var p := _random_spot(player.global_position, 120.0, 400.0, false)
 		if p != Vector3.INF:
 			spawn_pack(p, 2, false)
+	spawn_fish()
 	if get_tree().get_nodes_in_group("rabbit").size() < RABBITS / 2:
 		for i in 3:
 			var p := _random_spot(player.global_position, 60.0, 400.0, true)

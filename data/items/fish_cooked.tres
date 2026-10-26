@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://crafting/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = "fish_cooked"
+display_name = "Pişmiş balık"
+description = "Ateşte pişmiş balık. Doyurucu ve güvenli."
+category = 1
+max_stack = 6
+color = Color(0.78, 0.55, 0.3, 1)
+abbr = "Pb"
+hunger = 26.0
+health = 3.0
+burns_into = "meat_burnt"
