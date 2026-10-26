@@ -143,6 +143,8 @@ func test_kill_and_butcher_deer() -> void:
 func test_thrown_spear_hits_deer_and_drops() -> void:
 	var deer := _spawn("deer", Vector3(0, 0, -6)) as Deer
 	await wait_physics_frames(2)
+	# Mızrak mekaniğini sınamak için geyik yerinde tutulur (kaçışı ayrı testte).
+	deer.set_physics_process(false)
 	player.rotation.y = 0.0
 	player.head.rotation.x = 0.0
 	var target := deer.global_position + Vector3(0, 0.9, 0)
@@ -190,3 +192,27 @@ func test_animals_are_saved() -> void:
 	assert_gt(entries.size(), 5)
 	var dead: Array = entries.filter(func(e: Dictionary) -> bool: return int(e.died_day) >= 0)
 	assert_gt(dead.size(), 0, "leş de kaydedilmeli")
+
+
+func test_fleeing_deer_turns_away_smoothly_and_looks_back() -> void:
+	var deer := _spawn("deer", Vector3(8, 0, 0)) as Deer
+	await wait_physics_frames(1)
+	deer.flee_from(player.global_position)
+	deer.think(0.1, player, 8.0)
+	var away := deer.global_position - player.global_position
+	away.y = 0.0
+	assert_gt(deer._move_dir.dot(away.normalized()), 0.6, "tehditten uzağa kaçmalı")
+	assert_eq(deer._speed, deer.run_speed)
+	# Güvenli mesafeye ulaşınca durup geri bakar.
+	deer._state_time = 4.0
+	deer.think(0.1, player, 60.0)
+	assert_eq(deer.state, AnimalBase.State.ALERT)
+	assert_true(deer._looking_back)
+
+
+func test_herd_flees_in_same_direction() -> void:
+	var a := _spawn("deer", Vector3(20, 0, 0)) as Deer
+	var b := _spawn("deer", Vector3(22, 0, 4)) as Deer
+	await wait_physics_frames(1)
+	a.take_hit(5.0, player)
+	assert_gt(b._flee_dir.dot(Vector3(1, 0, 0)), 0.7, "sürü aynı yöne kaçmalı")

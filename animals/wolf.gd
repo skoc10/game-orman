@@ -199,21 +199,36 @@ func model_height() -> float:
 
 func _build_model() -> Node3D:
 	var root := Node3D.new()
-	var fur := Color(0.44, 0.44, 0.46)
-	var light := Color(0.7, 0.69, 0.66)
-	var dark := Color(0.15, 0.15, 0.16)
-	_part(root, Vector3(0.36, 0.38, 1.0), Vector3(0, 0.72, 0), fur)
-	_part(root, Vector3(0.3, 0.1, 0.8), Vector3(0, 0.55, 0), light)
-	_part(root, Vector3(0.3, 0.3, 0.32), Vector3(0, 0.88, -0.6), fur)
-	_part(root, Vector3(0.14, 0.13, 0.26), Vector3(0, 0.82, -0.86), light)
-	_part(root, Vector3(0.08, 0.06, 0.06), Vector3(0, 0.86, -1.0), dark)
-	_part(root, Vector3(0.07, 0.14, 0.05), Vector3(0.09, 1.08, -0.55), fur)
-	_part(root, Vector3(0.07, 0.14, 0.05), Vector3(-0.09, 1.08, -0.55), fur)
-	_part(root, Vector3(0.05, 0.04, 0.02), Vector3(0.08, 0.93, -0.77), Color(0.95, 0.75, 0.2))
-	_part(root, Vector3(0.05, 0.04, 0.02), Vector3(-0.08, 0.93, -0.77), Color(0.95, 0.75, 0.2))
-	_part(root, Vector3(0.1, 0.1, 0.5), Vector3(0, 0.72, 0.68), fur, Vector3(0.6, 0, 0))
-	for hip in [Vector3(0.12, 0.58, -0.36), Vector3(-0.12, 0.58, -0.36), Vector3(0.12, 0.58, 0.36), Vector3(-0.12, 0.58, 0.36)]:
-		_leg(root, hip, 0.58, 0.08, fur.darkened(0.15))
+	# Kurtlar zayıf ve uzun bacaklıdır: derin göğüs, içe çekik bel, dar kalça.
+	var coats := [Color(0.46, 0.46, 0.48), Color(0.5, 0.45, 0.38), Color(0.32, 0.32, 0.34)]
+	var fur: Color = coats[rng.randi() % coats.size()]
+	var light := fur.lightened(0.35)
+	var dark := Color(0.12, 0.12, 0.13)
+	_blob(root, Vector3(0, 0.8, -0.24), Vector3(0.27, 0.4, 0.48), fur)
+	_blob(root, Vector3(0, 0.77, 0.12), Vector3(0.19, 0.26, 0.46), fur)
+	_blob(root, Vector3(0, 0.78, 0.36), Vector3(0.22, 0.27, 0.28), fur)
+	_blob(root, Vector3(0, 0.66, -0.24), Vector3(0.17, 0.16, 0.36), light)
+	_blob(root, Vector3(0, 0.92, -0.36), Vector3(0.24, 0.16, 0.24), fur.darkened(0.15))
+	_head = Node3D.new()
+	_head.position = Vector3(0, 0.9, -0.46)
+	root.add_child(_head)
+	_seg(_head, Vector3.ZERO, Vector3(0, 0.1, -0.16), 0.1, 0.085, fur)
+	_blob(_head, Vector3(0, 0.14, -0.24), Vector3(0.19, 0.17, 0.23), fur)
+	_seg(_head, Vector3(0, 0.11, -0.32), Vector3(0, 0.07, -0.53), 0.06, 0.032, light)
+	_blob(_head, Vector3(0, 0.075, -0.54), Vector3(0.05, 0.04, 0.04), dark)
+	for side in [-1.0, 1.0]:
+		_seg(_head, Vector3(0.06 * side, 0.21, -0.19), Vector3(0.08 * side, 0.34, -0.17), 0.035, 0.004, fur)
+		_blob(_head, Vector3(0.06 * side, 0.17, -0.34), Vector3(0.03, 0.022, 0.02), Color(0.95, 0.75, 0.2))
+	# Gür, aşağı sarkan kuyruk.
+	_tail = Node3D.new()
+	_tail.position = Vector3(0, 0.82, 0.48)
+	root.add_child(_tail)
+	_seg(_tail, Vector3.ZERO, Vector3(0, -0.22, 0.24), 0.04, 0.075, fur)
+	_seg(_tail, Vector3(0, -0.22, 0.24), Vector3(0, -0.4, 0.3), 0.075, 0.025, fur.darkened(0.25))
+	for side in [-1.0, 1.0]:
+		_leg2(root, Vector3(0.085 * side, 0.7, -0.3), 0.33, 0.35, 0.028, fur, dark, true)
+	for side in [-1.0, 1.0]:
+		_leg2(root, Vector3(0.085 * side, 0.73, 0.36), 0.36, 0.36, 0.03, fur, dark, false)
 	return root
 
 

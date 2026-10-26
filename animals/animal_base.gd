@@ -28,7 +28,19 @@ var model: Node3D
 var ext: AnimalModel
 var rng := RandomNumberGenerator.new()
 
+## Mağara içindeki hayvanlar arazi yerine çarpışmalarla yürür.
+var indoor := false
+## Koşarken gövdenin sıçrama yüksekliği (geyik sekerek kaçar).
+var bound_height := 0.05
+## Otlarken başın eğilme açısı (radyan, negatif = öne/aşağı). 0 ise otlamaz.
+var graze_angle := 0.0
+
 var _legs: Array[Node3D] = []
+var _knees: Array[Node3D] = []
+var _head: Node3D
+var _tail: Node3D
+var _steer_timer := 0.0
+var _steer_turn := 0.0
 var _state_time := 0.0
 var _target := Vector3.ZERO
 var _move_dir := Vector3.ZERO
@@ -228,6 +240,8 @@ func _pick_wander_target() -> void:
 
 
 func _apply_movement(delta: float) -> void:
+	if _speed > 0.5 and _move_dir != Vector3.ZERO:
+		_move_dir = _steer(_move_dir, delta)
 	var desired := _move_dir * _speed
 	if _speed > 0.1 and not _walkable(global_position + _move_dir * 2.0):
 		desired = Vector3.ZERO
@@ -252,6 +266,26 @@ func _apply_movement(delta: float) -> void:
 	_last_pos = global_position
 
 
+## Engellerin etrafından dolaşma: önü ve iki yanı ışınla yoklar, istenen yöne
+## en yakın açık yolu seçer. Böylece hayvan ağaca çarpıp durmak yerine kıvrılarak geçer.
+func _steer(desired: Vector3, delta: float) -> Vector3:
+	_steer_timer -= delta
+	if _steer_timer <= 0.0:
+		_steer_timer = 0.15
+		_steer_turn = 0.0
+		var space := get_world_3d().direct_space_state
+		var from := global_position + Vector3.UP * 0.7
+		var probe := 2.5 + _speed * 0.35
+		for angle in [0.0, 0.45, -0.45, 0.9, -0.9, 1.4, -1.4]:
+			var dir := desired.rotated(Vector3.UP, angle)
+			var q := PhysicsRayQueryParameters3D.create(from, from + dir * probe, 1)
+			q.exclude = [get_rid()]
+			if space.intersect_ray(q).is_empty() and _walkable(global_position + dir * 2.0):
+				_steer_turn = angle
+				break
+	return desired.rotated(Vector3.UP, _steer_turn)
+
+
 ## Önü kapalı: yön değiştir. Dolaşıyorsa yeni hedef seç.
 func on_blocked() -> void:
 	if state in [State.WANDER, State.IDLE]:
@@ -263,7 +297,7 @@ func on_blocked() -> void:
 
 func _walkable(p: Vector3) -> bool:
 	var gen := _gen()
-	if gen == null:
+	if gen == null or indoor:
 		return true
 	return gen.height_at(p.x, p.z) > WorldGen.WATER_LEVEL + 0.3 and gen.slope_at(p.x, p.z) < 0.55 \
 		and Vector2(p.x, p.z).length() < WorldGen.ISLAND_RADIUS
@@ -271,6 +305,8 @@ func _walkable(p: Vector3) -> bool:
 
 ## Uzaktaki hayvan: fizik olmadan yarım saniyede bir araziye yapışarak yürür.
 func _far_update(delta: float) -> void:
+	if indoor:
+		return
 	_far_timer += delta
 	if _far_timer < 0.5:
 		return
@@ -307,13 +343,27 @@ func _animate(delta: float) -> void:
 		_flash = maxf(0.0, _flash - delta * 4.0)
 		model.scale = Vector3.ONE * (1.0 + _flash * 0.08)
 		return
-	_anim_t += delta * (2.0 + speed * 2.2)
-	var amp := clampf(speed / maxf(run_speed, 0.1), 0.0, 1.0) * 0.7 + (0.15 if speed > 0.2 else 0.0)
+	var run := clampf(speed / maxf(run_speed, 0.1), 0.0, 1.0)
+	_anim_t += delta * (2.5 + speed * 2.0)
+	var amp := run * 0.75 + (0.18 if speed > 0.2 else 0.0)
 	for i in _legs.size():
-		var phase := 0.0 if i % 3 == 0 else PI
-		_legs[i].rotation.x = sin(_anim_t + phase) * amp
+		# Çapraz bacaklar birlikte; koşuda ön ve arka çiftler birlikte (dörtnal).
+		var phase := (0.0 if i % 3 == 0 else PI) if run < 0.6 else (0.0 if i < 2 else PI * 0.8)
+		var swing := sin(_anim_t + phase)
+		_legs[i].rotation.x = swing * amp
+		if i < _knees.size():
+			# Bacak geriye giderken diz bükülür.
+			_knees[i].rotation.x = maxf(0.0, -swing) * amp * 1.3 * (1.0 if i >= 2 else -1.0)
+	if _head:
+		var grazing := state == State.IDLE and graze_angle != 0.0 and fmod(_state_time, 6.0) > 2.0
+		var target_x := graze_angle if grazing else sin(_anim_t * 2.0) * 0.05 * amp
+		_head.rotation.x = lerpf(_head.rotation.x, target_x, clampf(delta * 3.0, 0.0, 1.0))
+	if _tail:
+		_tail.rotation.y = sin(_anim_t * 1.7) * (0.25 + run * 0.2)
 	if model:
-		model.position.y = absf(sin(_anim_t)) * 0.04 * amp
+		var bounce := absf(sin(_anim_t)) * (0.03 + bound_height * run * run)
+		model.position.y = bounce
+		model.rotation.x = sin(_anim_t * 2.0) * 0.04 * run
 		_flash = maxf(0.0, _flash - delta * 4.0)
 		model.scale = Vector3.ONE * (1.0 + _flash * 0.08)
 
@@ -329,6 +379,8 @@ func _become_corpse(animate: bool) -> void:
 	add_to_group("corpse")
 	for leg in _legs:
 		leg.rotation.x = 0.0
+	for knee in _knees:
+		knee.rotation.x = 0.0
 	if ext and ext.has_anim("death"):
 		if animate:
 			ext.play("death")
@@ -400,6 +452,49 @@ func _part(parent: Node3D, size: Vector3, pos: Vector3, color: Color, rot := Vec
 	mi.rotation = rot
 	parent.add_child(mi)
 	return mi
+
+
+## İki nokta arasında konik gövde parçası (yuvarlak kesitli, low-poly).
+func _seg(parent: Node3D, a: Vector3, b: Vector3, r_a: float, r_b: float, color: Color, sides := 6) -> MeshInstance3D:
+	var d := b - a
+	var mi := MeshInstance3D.new()
+	mi.mesh = MeshFactory.cylinder(r_b, r_a, d.length(), sides)
+	mi.material_override = MeshFactory.flat_material(color)
+	var up := d.normalized()
+	var ref := Vector3.FORWARD if absf(up.dot(Vector3.FORWARD)) < 0.95 else Vector3.RIGHT
+	var x := ref.cross(up).normalized()
+	var z := x.cross(up).normalized()
+	mi.transform = Transform3D(Basis(x, up, z), (a + b) * 0.5)
+	parent.add_child(mi)
+	return mi
+
+
+## Elipsoit kas/gövde parçası.
+func _blob(parent: Node3D, pos: Vector3, size: Vector3, color: Color, rot := Vector3.ZERO) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	mi.mesh = MeshFactory.sphere(0.5, 8, 5)
+	mi.material_override = MeshFactory.flat_material(color)
+	mi.transform = Transform3D(Basis.from_euler(rot).scaled(size), pos)
+	parent.add_child(mi)
+	return mi
+
+
+## İki eklemli bacak: kalçadan dize, dizden ayağa. Ön bacakta diz geriye,
+## arka bacakta (topuk) ileriye kırılır. Uzunluklar toplamı kalça yüksekliğidir.
+func _leg2(parent: Node3D, hip: Vector3, upper: float, lower: float, r: float, color: Color, foot: Color, front: bool) -> void:
+	var pivot := Node3D.new()
+	pivot.position = hip
+	parent.add_child(pivot)
+	var bend := 0.12 if front else -0.18
+	var knee_pos := Vector3(0, -upper, bend)
+	_seg(pivot, Vector3.ZERO, knee_pos, r * 1.6, r, color)
+	var knee := Node3D.new()
+	knee.position = knee_pos
+	pivot.add_child(knee)
+	_seg(knee, Vector3.ZERO, Vector3(0, -lower, -bend), r, r * 0.8, color)
+	_blob(knee, Vector3(0, -lower, -bend - 0.02), Vector3(r * 2.6, r * 1.6, r * 3.2), foot)
+	_legs.append(pivot)
+	_knees.append(knee)
 
 
 ## Kalça noktasından dönen bacak.
