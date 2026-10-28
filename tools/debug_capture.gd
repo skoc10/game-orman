@@ -134,6 +134,15 @@ func on_world_ready(world: Node) -> void:
 		dog.adopted = str(args.dog) != "sahipsiz"
 		dog.age_days = 4.0 if str(args.dog) == "yetiskin" else 0.0
 		dog.rotation.y = player.rotation.y + PI
+	if args.has("village"):
+		# --village: köyün girişinde, meydana bakarak dur.
+		var vc: Vector3 = world.village.global_position
+		var from: Vector3 = vc + (world.spawn_point - vc).normalized() * (6.0 if str(args.village) == "near" else 24.0)
+		from.y = world.gen.height_at(from.x, from.z) + 0.1
+		var look: Vector3 = vc - from
+		player.teleport(from, rad_to_deg(atan2(-look.x, -look.z)), -6.0)
+	if args.has("trade"):
+		world.get_node("TradeScreen").open.call_deferred(world.village.chief)
 	if args.has("kill"):
 		for a in world.get_tree().get_nodes_in_group("animal"):
 			if a.global_position.distance_to(player.global_position) < 15.0:

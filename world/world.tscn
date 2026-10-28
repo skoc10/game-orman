@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" path="res://ui/storage_screen.tscn" id="6_storage"]
 [ext_resource type="PackedScene" path="res://ui/pause_menu.tscn" id="7_pause"]
 [ext_resource type="PackedScene" path="res://ui/touch_controls.tscn" id="8_touch"]
+[ext_resource type="PackedScene" path="res://ui/trade_screen.tscn" id="9_trade"]
 
 [node name="World" type="Node3D"]
 script = ExtResource("1_world")
@@ -21,6 +22,8 @@ script = ExtResource("1_world")
 [node name="BuildMenu" parent="." instance=ExtResource("5_build")]
 
 [node name="StorageScreen" parent="." instance=ExtResource("6_storage")]
+
+[node name="TradeScreen" parent="." instance=ExtResource("9_trade")]
 
 [node name="TouchControls" parent="." instance=ExtResource("8_touch")]
 

@@ -7,6 +7,8 @@ const FOOD_RADIUS := 0.45
 
 ## -1: yeni inşa edildi, başlangıç yakıtıyla yanar.
 var fuel := -1.0
+## Köy ateşi gibi hiç sönmeyen ateş.
+var eternal := false
 var cooking := Cooking.new(Balance.d)
 
 var _light: OmniLight3D
@@ -45,7 +47,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	var burning := is_burning()
-	if burning:
+	if burning and not eternal:
 		fuel = maxf(0.0, fuel - delta)
 	cooking.tick(delta, burning)
 	_update_visuals(delta)

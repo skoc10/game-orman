@@ -313,6 +313,10 @@ func _walkable(p: Vector3) -> bool:
 	var gen := _gen()
 	if gen == null or indoor:
 		return true
+	if species in ["wolf", "bear"]:
+		var w := GameState.world
+		if w and w.village and w.village.contains(p):
+			return false
 	return gen.height_at(p.x, p.z) > WorldGen.WATER_LEVEL + 0.3 and gen.slope_at(p.x, p.z) < 0.55 \
 		and Vector2(p.x, p.z).length() < WorldGen.ISLAND_RADIUS
 

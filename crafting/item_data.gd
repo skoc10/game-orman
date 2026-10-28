@@ -45,6 +45,8 @@ enum Category { RESOURCE, FOOD, DRINK, TOOL, WEAPON, LIGHT, MEDICAL, CLOTHING, C
 @export var fuel := 0.0
 ## Isı kaybı çarpanı. Envanterdeki en iyi giysi geçerlidir.
 @export var cold_resist := 1.0
+## Yenince mide bulantısını ve zehri geçirir.
+@export var cures_nausea := false
 
 
 func is_consumable() -> bool:

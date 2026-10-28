@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://crafting/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = "medicine"
+display_name = "Şifalı karışım"
+description = "Yerlilerin şifalı otlardan yaptığı karışım. Zehri ve mide bulantısını geçirir, yaraları iyileştirir."
+category = 6
+max_stack = 5
+color = Color(0.45, 0.68, 0.42, 1)
+abbr = "Şf"
+health = 40.0
+cures_nausea = true

@@ -124,6 +124,8 @@ func use_stamina(amount: float) -> bool:
 func consume(item: ItemData, rng: RandomNumberGenerator) -> bool:
 	hunger = clampf(hunger + item.hunger, 0.0, MAX)
 	thirst = clampf(thirst + item.thirst, 0.0, MAX)
+	if item.cures_nausea:
+		nausea_time = 0.0
 	if item.health > 0.0:
 		heal(item.health)
 	elif item.health < 0.0:

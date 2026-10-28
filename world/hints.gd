@@ -20,6 +20,7 @@ const TEXTS := {
 	"cave": "Mağara ağzı! İçerisi zifiri karanlık; girmeden önce meşale yap. Bazı mağaralarda ayı uyur.",
 	"croc": "Gölde timsah var! Su içerken etrafına bak; tıslama duyarsan sudan birkaç adım uzaklaş.",
 	"puppy": "Yakında bir yavru köpek inliyor! Ona et ya da balık verirsen seninle gelir.",
+	"village": "Yerli köyü! Şefle konuşup takas yapabilirsin; misafir çadırında güvenle uyursun.",
 	"fish": "Suda balıklar var! Mızrakla vurabilir ya da 2 dal ve 1 ipten olta yapabilirsin.",
 }
 
@@ -59,11 +60,12 @@ func _next(p: Player) -> String:
 		"bear": _near(p, "bear", 35.0),
 		"snake": _near(p, "snake", 8.0),
 		"fish": _fish_near(p),
+		"village": _village_near(p),
 		"puppy": _stray_near(p),
 		"croc": _near(p, "crocodile", 25.0),
 		"cave": _near_mouth(p),
 	}
-	for id in ["start", "bear", "croc", "snake", "dusk", "wolves", "thirst", "hunger", "craft", "axe", "meat", "canteen", "puppy", "cave", "fish", "shelter"]:
+	for id in ["start", "village", "bear", "croc", "snake", "dusk", "wolves", "thirst", "hunger", "craft", "axe", "meat", "canteen", "puppy", "cave", "fish", "shelter"]:
 		if not shown.has(id) and conditions[id]:
 			return id
 	return ""
@@ -88,6 +90,11 @@ func _stray_near(p: Player) -> bool:
 		if not d.adopted and d.global_position.distance_to(p.global_position) < 20.0:
 			return true
 	return false
+
+
+func _village_near(p: Player) -> bool:
+	var w := GameState.world
+	return w != null and w.village != null and w.village.global_position.distance_to(p.global_position) < 40.0
 
 
 func _fish_near(p: Player) -> bool:

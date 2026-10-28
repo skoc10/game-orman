@@ -8,6 +8,9 @@ const GRASS_VIEW := 55.0
 const ROCK_COUNT := 160
 
 var _rock_body: StaticBody3D
+## Her kaya: [konum, parça anahtarı, parça içindeki sıra, çarpışma şekli]
+var _rocks: Array = []
+var _rock_mms := {}
 
 
 func build(gen: WorldGen, spawn: Vector3) -> void:
@@ -104,6 +107,7 @@ func _build_rocks(gen: WorldGen, spawn: Vector3) -> void:
 		shape.shape = sphere
 		shape.position = pos
 		_rock_body.add_child(shape)
+		_rocks.append([pos, key, (groups[key] as Array).size() - 1, shape])
 		placed += 1
 
 	var mesh := MeshFactory.rock()
@@ -123,3 +127,13 @@ func _build_rocks(gen: WorldGen, spawn: Vector3) -> void:
 		mmi.position = center
 		mmi.visibility_range_end = TreeField.view_distance()
 		add_child(mmi)
+		_rock_mms[key] = mm
+
+
+## Bir alandaki büyük kayaları kaldırır (köy meydanı).
+func clear_area(center: Vector3, radius: float) -> void:
+	for r in _rocks:
+		var p: Vector3 = r[0]
+		if Vector2(p.x - center.x, p.z - center.z).length() < radius:
+			(_rock_mms[r[1]] as MultiMesh).set_instance_transform(r[2], Transform3D(Basis().scaled(Vector3.ZERO), Vector3.ZERO))
+			(r[3] as CollisionShape3D).disabled = true

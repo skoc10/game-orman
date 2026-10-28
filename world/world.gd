@@ -13,6 +13,7 @@ var vegetation: VegetationSpawner
 var resources: ResourceSpawner
 var animals: AnimalSpawner
 var caves: CaveSystem
+var village: Village
 var hints: Hints
 var day_night: DayNight
 ## Çalışma anında oluşan ve kayıtla saklanan nesneler (yerdeki eşyalar, yapılar).
@@ -69,6 +70,8 @@ func _ready() -> void:
 	add_child(animals)
 	animals.setup(gen)
 
+	_build_village()
+
 	hints = Hints.new()
 	hints.name = "Hints"
 	add_child(hints)
@@ -102,6 +105,23 @@ func _ready() -> void:
 		debug.on_world_ready(self)
 
 
+## Köy ağaç ve mağaralar yerleştikten sonra kurulur; meydan ağaç ve kayadan temizlenir.
+func _build_village() -> void:
+	var avoid: Array = [spawn_point]
+	for m in caves.mouths():
+		avoid.append(m.global_position)
+	var center := Village.find_center(gen, spawn_point, avoid)
+	if center == Vector3.INF:
+		push_warning("Köy için uygun yer bulunamadı.")
+		return
+	trees.clear_area(center, Village.RADIUS + 3.0)
+	vegetation.clear_area(center, Village.RADIUS + 3.0)
+	village = Village.new()
+	village.name = "Village"
+	add_child(village)
+	village.build(gen, center)
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("quick_save") and not player.stats.dead:
 		if GameState.save_game():
@@ -130,6 +150,7 @@ func collect_save() -> Dictionary:
 		"resources": resources.save_state(),
 		"dynamic": dynamic,
 		"hints": hints.save_state(),
+		"village": village.save_state() if village else {},
 	}
 
 
@@ -139,6 +160,8 @@ func _apply_save(save: Dictionary) -> void:
 	trees.apply_felled(save.get("trees", []))
 	resources.load_state(save.get("resources", {}))
 	hints.load_state(save.get("hints", []))
+	if village:
+		village.load_state(save.get("village", {}))
 	for entry in save.get("dynamic", []):
 		if not entry is Dictionary:
 			continue

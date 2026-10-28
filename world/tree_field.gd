@@ -218,6 +218,23 @@ func _remove(id: int) -> void:
 	_stumps.add_child(stump)
 
 
+## Bir alanı ağaçlardan temizler (köy meydanı). Kütük bırakmaz ve kayda yazılmaz;
+## kimlikler değişmediği için eski kayıtlardaki kesilmiş ağaçlar yerinde kalır.
+func clear_area(center: Vector3, radius: float) -> int:
+	var n := 0
+	for id in positions.size():
+		if felled.has(id):
+			continue
+		var p := positions[id]
+		if Vector2(p.x - center.x, p.z - center.z).length() < radius:
+			var key := chunk_index(p) * Kind.size() + kinds[id]
+			(_multimeshes[key] as MultiMesh).set_instance_transform(_slot[id], Transform3D(Basis().scaled(Vector3.ZERO), Vector3.ZERO))
+			(_shapes[id] as CollisionShape3D).disabled = true
+			health[id] = 0.0
+			n += 1
+	return n
+
+
 func _drop_wood(id: int, dir: Vector3) -> void:
 	var world := GameState.world
 	if world == null:

@@ -266,6 +266,9 @@ func _random_spot(around: Vector3, min_d: float, max_d: float, prefer_open: bool
 			continue
 		if prefer_open and gen.forest_density(p.x, p.y) > 0.55 and i < 40:
 			continue
+		var w := GameState.world
+		if w and w.village and Vector2(p.x - w.village.global_position.x, p.y - w.village.global_position.z).length() < Village.RADIUS + 15.0:
+			continue
 		return _ground(Vector3(p.x, 0, p.y))
 	return Vector3.INF
 
