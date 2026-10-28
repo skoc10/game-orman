@@ -81,6 +81,15 @@ func on_world_ready(world: Node) -> void:
 		# --cave=N: N. mağaranın girişine geç.
 		var cave: Cave = world.caves.caves[int(args.cave)]
 		player.teleport(cave.entrance_point() + Vector3(1.6, 0.1, 1.6), float(args.get("caveyaw", "225")), 0.0)
+	if args.has("raft"):
+		# --raft: gölde bir sal kurup biner; elde olta.
+		var c: Vector2 = world.gen.lake_center
+		var toward: Vector2 = (Vector2(world.spawn_point.x, world.spawn_point.z) - c).normalized()
+		var rp: Vector2 = c + toward * float(world.gen.lake_radius) * 0.45
+		var raft: Node3D = BuildSystem.spawn(ItemDB.get_recipe("raft"), Transform3D(Basis(Vector3.UP, atan2(toward.x, toward.y)), Vector3(rp.x, 0, rp.y)))
+		player.inventory.set_slot(0, {"id": "fishing_rod", "count": 1, "dur": 25.0})
+		player.equipment.select(0)
+		raft.board.call_deferred(player)
 	if args.has("yaw") or args.has("pitch"):
 		player.teleport(player.global_position, float(args.get("yaw", rad_to_deg(player.rotation.y))), float(args.get("pitch", "0")))
 	if args.has("stats"):

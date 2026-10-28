@@ -78,6 +78,17 @@ func spawn_fish() -> void:
 		if h < -1.2 and h > -6.5:
 			_add_school(Vector3(cos(a) * r, 0, sin(a) * r), true)
 			placed += 1
+	# Açık denizde (salla gidilir) daha kalabalık sürüler.
+	for i in 5:
+		var a := rng.randf() * TAU
+		var r := rng.randf_range(WorldGen.ISLAND_RADIUS * 1.1, WorldGen.ISLAND_RADIUS * 1.2)
+		var school := FishSchool.new()
+		school.sea = true
+		school.count = rng.randi_range(7, 10)
+		school.radius = rng.randf_range(5.0, 8.0)
+		school.floor_y = gen.height_at(cos(a) * r, sin(a) * r)
+		school.position = Vector3(cos(a) * r, WorldGen.WATER_LEVEL - 0.8, sin(a) * r)
+		add_child(school)
 
 
 func _add_school(pos: Vector3, sea: bool) -> void:

@@ -9,7 +9,7 @@ func before_each() -> void:
 
 func test_recipes_are_loaded_and_sorted() -> void:
 	assert_gt(ItemDB.craft_recipes().size(), 5)
-	assert_eq(ItemDB.build_recipes().size(), 3)
+	assert_eq(ItemDB.build_recipes().size(), 4)
 	assert_eq(ItemDB.craft_recipes()[0].id, "rope")
 
 

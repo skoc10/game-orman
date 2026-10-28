@@ -108,6 +108,8 @@ func _update_ghost() -> void:
 		_set_valid(false, tr("Çok uzak."))
 		return
 	var pos: Vector3 = hit.position
+	if ghost.placement == "water":
+		pos.y = WorldGen.WATER_LEVEL
 	var face := player.rotation.y + PI + _yaw_offset
 	ghost.global_transform = Transform3D(Basis(Vector3.UP, face), pos)
 	_set_valid(check_placement(space, hit), reason)
@@ -120,14 +122,20 @@ func check_placement(space: PhysicsDirectSpaceState3D, hit: Dictionary) -> bool:
 	if not (collider is Node and (collider as Node).is_in_group("terrain")):
 		reason = tr("Buraya inşa edilemez.")
 		return false
-	if (hit.normal as Vector3).y < MIN_FLATNESS:
-		reason = tr("Zemin çok eğimli.")
-		return false
 	var gen: WorldGen = GameState.world.gen
 	var pos: Vector3 = hit.position
-	if gen.height_at(pos.x, pos.z) < WorldGen.WATER_LEVEL + 0.3:
-		reason = tr("Suya inşa edilemez.")
-		return false
+	if ghost.placement == "water":
+		if gen.height_at(pos.x, pos.z) > WorldGen.WATER_LEVEL - 0.6:
+			reason = tr("Sal için yeterince derin suya bak.")
+			return false
+		pos.y = WorldGen.WATER_LEVEL
+	else:
+		if (hit.normal as Vector3).y < MIN_FLATNESS:
+			reason = tr("Zemin çok eğimli.")
+			return false
+		if gen.height_at(pos.x, pos.z) < WorldGen.WATER_LEVEL + 0.3:
+			reason = tr("Suya inşa edilemez.")
+			return false
 	var box := BoxShape3D.new()
 	box.size = ghost.footprint
 	var shape_query := PhysicsShapeQueryParameters3D.new()

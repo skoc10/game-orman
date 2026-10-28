@@ -9,6 +9,8 @@ const GHOST_BAD := Color(1.0, 0.35, 0.3, 0.45)
 @export var recipe_id := ""
 ## Yerleşim kontrolünde kullanılan taban kutusu (genişlik, yükseklik, derinlik).
 @export var footprint := Vector3(1, 1, 1)
+## "land": kuru, düz arazi. "water": kıyıya yakın, yeterince derin su (sal).
+var placement := "land"
 
 var is_ghost := false
 

@@ -94,6 +94,13 @@ func _scan() -> Dictionary:
 	if info.is_empty():
 		info = _water_interaction()
 		key = "water"
+	if player.vehicle:
+		# Saldayken E iner; elde olta ya da matara varsa önce suyla ilgili iş yapılır.
+		var held := player.equipment.held_item()
+		var water_tool := held != null and held.id in ["fishing_rod", "canteen", "water_raw", "water_clean"]
+		if not (water_tool and key == "water" and not info.is_empty()):
+			info = {"text": tr("Saldan in"), "hold": 0.4, "action": player.vehicle.leave}
+			key = "raft"
 	if not info.is_empty():
 		key += ":" + str(info.get("text", ""))
 	_set_current(info, key)

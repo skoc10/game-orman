@@ -25,6 +25,8 @@ var interaction: Interaction
 var equipment: Equipment
 var build: BuildSystem
 var fishing: Fishing
+## Binilen sal; null ise yürüyor/yüzüyor.
+var vehicle: Node3D
 var rng := RandomNumberGenerator.new()
 
 var is_sprinting := false
@@ -106,6 +108,16 @@ func _physics_process(delta: float) -> void:
 
 	if debug_fly:
 		_fly(delta, wish)
+		return
+	if vehicle:
+		# Salda: hareket tuşları salı bakılan yöne sürer; oyuncu oturur.
+		is_swimming = false
+		is_sprinting = false
+		velocity = Vector3.ZERO
+		var flat := Vector3(wish.x, 0.0, wish.z)
+		vehicle.drive(flat.normalized() * minf(flat.length(), 1.0), not input_locked and Input.is_action_pressed("sprint"), delta)
+		_update_stats(delta)
+		_camera_effects(delta)
 		return
 
 	var was_swimming := is_swimming
@@ -302,6 +314,7 @@ func save_state() -> Dictionary:
 		"stats": stats.to_dict(),
 		"inventory": inventory.to_array(),
 		"selected": equipment.selected,
+		"on_raft": vehicle != null,
 	}
 
 
@@ -312,6 +325,16 @@ func load_state(d: Dictionary) -> void:
 		stats.health = 50.0
 	inventory.from_array(d.get("inventory", []))
 	equipment.select(int(d.get("selected", 0)))
+	if bool(d.get("on_raft", false)):
+		_reboard_raft.call_deferred()
+
+
+## Kayıttan yüklenince en yakın sala yeniden biner.
+func _reboard_raft() -> void:
+	for raft in get_tree().get_nodes_in_group("raft"):
+		if raft.global_position.distance_to(global_position) < 3.0:
+			raft.board(self)
+			return
 
 
 func teleport(pos: Vector3, yaw_deg := NAN, pitch_deg := NAN) -> void:

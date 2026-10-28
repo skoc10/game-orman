@@ -273,3 +273,42 @@ func test_assisted_targeting_finds_item_without_exact_aim() -> void:
 	assert_true(info.get("auto", false))
 	pickup.queue_free()
 	player.head.rotation.x = 0.0
+
+
+func test_raft_is_placed_on_water_and_carries_player() -> void:
+	var recipe := ItemDB.get_recipe("raft")
+	assert_not_null(recipe)
+	# Göl merkezine kur, bin, sür, in.
+	var c: Vector2 = world.gen.lake_center
+	var raft: Node3D = BuildSystem.spawn(recipe, Transform3D(Basis(), Vector3(c.x, 0, c.y)))
+	await wait_physics_frames(2)
+	assert_almost_eq(raft.global_position.y, WorldGen.WATER_LEVEL, 0.2, "sal suyun üstünde durmalı")
+	raft.board(player)
+	assert_eq(player.vehicle, raft)
+	var start: Vector3 = raft.global_position
+	for i in 60:
+		raft.drive(Vector3.RIGHT, false, 1.0 / 60.0)
+	assert_gt(raft.global_position.distance_to(start), 0.5, "sal kürekle ilerlemeli")
+	await wait_physics_frames(2)
+	assert_lt(player.global_position.distance_to(raft.seat_position()), 0.3, "oyuncu salda oturmalı")
+	assert_false(player.is_swimming)
+	assert_false(raft.can_float_at(world.spawn_point), "sal karaya çıkamamalı")
+	var info: Dictionary = player.interaction._scan()
+	assert_string_contains(str(info.get("text", "")), "Saldan in")
+	raft.leave()
+	assert_null(player.vehicle)
+	raft.queue_free()
+	player.teleport(world.spawn_point + Vector3.UP * 0.2)
+
+
+func test_raft_ghost_needs_deep_water() -> void:
+	player.inventory.add("log", 6)
+	player.inventory.add("rope", 3)
+	player.build.start(ItemDB.get_recipe("raft"))
+	# Kuru arazide geçersiz olmalı.
+	player.teleport(world.spawn_point + Vector3.UP * 0.2)
+	player.head.rotation.x = deg_to_rad(-45.0)
+	player.build._update_ghost()
+	assert_false(player.build.valid)
+	player.build.cancel()
+	player.head.rotation.x = 0.0
