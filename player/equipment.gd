@@ -23,6 +23,9 @@ var _eat_cooldown := 0.0
 var _torch_light: OmniLight3D
 var _flame: MeshInstance3D
 var _bob := 0.0
+## Yayın gerilme oranı (0..1); Vur basılı tutuldukça artar, bırakınca ok atılır.
+var draw := 0.0
+const DRAW_TIME := 0.9
 
 
 func _ready() -> void:
@@ -86,6 +89,9 @@ func _process(delta: float) -> void:
 		return
 	if player.build and player.build.is_placing():
 		return
+	if item and item.id == "bow":
+		_update_bow(delta)
+		return
 	if Input.is_action_pressed("attack"):
 		use_primary()
 	elif Input.is_action_just_pressed("alt_action"):
@@ -135,6 +141,42 @@ func use_secondary() -> void:
 	spear.velocity = player.look_direction() * 24.0 + Vector3.UP * 1.5
 	player.get_parent().add_child(spear)
 	spear.global_position = player.camera.global_position + player.look_direction() * 0.6
+
+
+## Yay: Vur basılı tutulunca gerilir, bırakınca ok atılır.
+func _update_bow(delta: float) -> void:
+	if Input.is_action_pressed("attack"):
+		if not player.inventory.has("arrow"):
+			if Input.is_action_just_pressed("attack"):
+				player.notify(tr("Okun yok. 1 dal, 1 taş ve 1 liften ok yap."))
+			return
+		draw = minf(1.0, draw + delta / DRAW_TIME)
+		_pivot.position = Vector3(0, 0, 0.12 * draw)
+		Events.interaction_changed.emit(tr("Yay geriliyor... bırak ve at"), draw)
+	elif draw > 0.0:
+		shoot_arrow(draw)
+
+
+## Ok atar; güç gerilme oranına bağlıdır.
+func shoot_arrow(power: float) -> void:
+	var bow := held_item()
+	draw = 0.0
+	_pivot.position = Vector3.ZERO
+	Events.interaction_changed.emit("", -1.0)
+	if bow == null or bow.id != "bow" or not player.inventory.remove("arrow", 1):
+		return
+	power = clampf(power, 0.15, 1.0)
+	var arrow := SpearProjectile.new()
+	arrow.item_id = "arrow"
+	arrow.recover_chance = 0.7
+	arrow.damage = lerpf(12.0, ItemDB.get_item("arrow").throw_damage, power)
+	arrow.thrower = player
+	arrow.velocity = player.look_direction() * lerpf(14.0, 42.0, power) + Vector3.UP * 0.6
+	player.get_parent().add_child(arrow)
+	arrow.global_position = player.camera.global_position + player.look_direction() * 0.5
+	Sfx.play("bow_release", -4.0, 0.1)
+	if player.inventory.wear(selected, 1.0):
+		player.notify(tr("Yayın kırıldı!"))
 
 
 func _consume(item: ItemData) -> void:
@@ -222,7 +264,7 @@ func _refresh(force := false) -> void:
 	_held.mesh = MeshFactory.item_mesh(id)
 	# Küçük eşyalar avuçta, uzun aletler sapından tutulur.
 	var item := ItemDB.get_item(id)
-	var long := id in ["axe", "spear", "torch", "knife", "stick", "log"]
+	var long := id in ["axe", "spear", "torch", "knife", "stick", "log", "bow", "fishing_rod"]
 	_held.position = Vector3(0, -0.05, 0) if long else Vector3(0, 0, -0.05)
 	_held.rotation = Vector3.ZERO if long else Vector3(0.4, 0, 0)
 	_held.scale = Vector3.ONE * (0.5 if id == "log" else 0.8)

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="RecipeData" format=3]
+
+[ext_resource type="Script" path="res://crafting/recipe_data.gd" id="1_recipe"]
+
+[resource]
+script = ExtResource("1_recipe")
+id = "arrow"
+display_name = "Ok (4 adet)"
+description = ""
+ingredients = {
+"stick": 1,
+"stone": 1,
+"fiber": 1
+}
+result_id = "arrow"
+result_count = 4
+is_build = false
+build_scene = ""
+order = 10

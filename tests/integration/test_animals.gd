@@ -29,6 +29,8 @@ func after_all() -> void:
 func before_each() -> void:
 	TimeOfDay.hour = 12.0
 	player.stats.from_dict({})
+	# Testler birbirinin bıraktığı konuma bağlı kalmasın.
+	player.teleport(world.spawn_point + Vector3.UP * 0.1, 0.0, 0.0)
 	for a in get_tree().get_nodes_in_group("animal"):
 		if a.global_position.distance_to(player.global_position) < 60.0:
 			a.free()
@@ -325,3 +327,48 @@ func test_predators_vocalise_when_close() -> void:
 	snake._vocal_cd = 0.0
 	snake.think(0.1, player, 3.0)
 	assert_gt(snake._vocal_cd, 0.0, "yılan uyarı boyunca tıslamaya devam etmeli")
+
+
+func test_bow_shoots_arrow_that_hits_and_drops() -> void:
+	assert_not_null(ItemDB.get_recipe("bow"))
+	assert_eq(ItemDB.get_recipe("arrow").result_count, 4)
+	var deer := _spawn("deer", Vector3(0, 0, -6)) as Deer
+	await wait_physics_frames(2)
+	deer.set_physics_process(false)
+	player.rotation.y = 0.0
+	player.head.look_at(deer.global_position + Vector3(0, 0.9, 0))
+	player.head.rotation.y = 0.0
+	await wait_physics_frames(1)
+	# Görüş hattı açık olmalı (aradaki ağaç/tümsek testi geçersiz kılar).
+	var q := PhysicsRayQueryParameters3D.create(player.camera.global_position, deer.global_position + Vector3(0, 0.9, 0), 1 | 8)
+	q.exclude = [player.get_rid()]
+	var los: Dictionary = player.get_world_3d().direct_space_state.intersect_ray(q)
+	assert_eq(los.get("collider"), deer, "görüş hattı geyiğe açık olmalı")
+	player.inventory.set_slot(0, {"id": "bow", "count": 1, "dur": 80.0})
+	player.inventory.add("arrow", 3)
+	player.equipment.select(0)
+	var arrows := player.inventory.count_of("arrow")
+	var hp := deer.health
+	player.equipment.shoot_arrow(1.0)
+	assert_eq(player.inventory.count_of("arrow"), arrows - 1, "ok harcanmalı")
+	assert_lt(float(player.inventory.get_slot(0).dur), 80.0, "yay yıpranmalı")
+	await wait_physics_frames(30)
+	assert_lt(deer.health, hp, "ok geyiğe isabet etmeli")
+	player.head.rotation = Vector3.ZERO
+	player.inventory.set_slot(0, {})
+
+
+func test_weak_draw_does_less_damage() -> void:
+	player.inventory.set_slot(0, {"id": "bow", "count": 1, "dur": 80.0})
+	player.inventory.add("arrow", 2)
+	player.equipment.select(0)
+	var before := get_tree().get_nodes_in_group("_none").size()
+	player.equipment.shoot_arrow(0.2)
+	var weak: SpearProjectile = null
+	for c in player.get_parent().get_children():
+		if c is SpearProjectile and c.item_id == "arrow":
+			weak = c
+	assert_not_null(weak)
+	assert_lt(weak.damage, ItemDB.get_item("arrow").throw_damage * 0.6)
+	weak.queue_free()
+	player.inventory.set_slot(0, {})

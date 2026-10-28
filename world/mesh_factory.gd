@@ -230,6 +230,21 @@ static func _make_item(id: String) -> ArrayMesh:
 			])
 		"fish_raw", "fish_cooked":
 			return fish_mesh(c, 0.32)
+		"bow":
+			# Üç parçalı yay kolu ve kiriş; tutma yeri ortada (orijin).
+			var limb := flat_material(c)
+			return combine([
+				[cylinder(0.018, 0.022, 0.42, 5), at(Vector3(0.05, 0.0, 0), Vector3(0, 0, 0)), limb],
+				[cylinder(0.012, 0.018, 0.4, 5), at(Vector3(0.0, 0.38, 0), Vector3(0, 0, 0.25)), limb],
+				[cylinder(0.012, 0.018, 0.4, 5), at(Vector3(0.0, -0.38, 0), Vector3(0, 0, -0.25)), limb],
+				[box(Vector3(0.004, 1.12, 0.004)), at(Vector3(-0.1, 0.0, 0)), flat_material(Color(0.9, 0.88, 0.8))],
+			])
+		"arrow":
+			return combine([
+				[cylinder(0.008, 0.008, 0.62, 4), at(Vector3(0, 0.31, 0)), wood],
+				[cylinder(0.0, 0.022, 0.07, 4), at(Vector3(0, 0.65, 0)), stone_mat],
+				[box(Vector3(0.05, 0.08, 0.004)), at(Vector3(0, 0.05, 0)), flat_material(Color(0.85, 0.85, 0.8))],
+			])
 		"fishing_rod":
 			return combine([
 				[cylinder(0.012, 0.022, 1.5, 5), at(Vector3(0, 0.75, 0)), wood],

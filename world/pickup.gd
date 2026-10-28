@@ -40,7 +40,7 @@ func _ready() -> void:
 	mi.visibility_range_end = 80.0
 	var item := ItemDB.get_item(item_id)
 	# Uzun eşyalar yere yatırılır.
-	if item and item_id in ["stick", "log", "axe", "spear", "torch", "knife", "fiber", "fishing_rod"]:
+	if item and item_id in ["stick", "log", "axe", "spear", "torch", "knife", "fiber", "fishing_rod", "arrow", "bow"]:
 		mi.rotation.z = PI * 0.5
 		mi.position.y = 0.18 if item_id == "log" else 0.04
 	add_child(mi)
