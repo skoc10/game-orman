@@ -220,6 +220,10 @@ func _strike(item: ItemData, damage: float, weak: bool) -> void:
 	if hit.is_empty():
 		return
 	var col: Object = hit.collider
+	if col is Dog:
+		# Köpeğe vurulmaz; sevilir.
+		col._wag = 1.0
+		return
 	if col.has_method("take_tree_hit"):
 		if item and item.chop_power > 0.0:
 			col.take_tree_hit(hit.shape, item.chop_power * (0.5 if weak else 1.0), player)

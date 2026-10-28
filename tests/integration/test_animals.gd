@@ -420,3 +420,71 @@ func test_crocodile_ignores_player_away_from_water() -> void:
 	player.teleport(world.spawn_point + Vector3.UP * 0.1)
 	assert_false(croc._is_prey(player), "sudan uzaktaki oyuncu av değil")
 	assert_false(croc._walkable(world.spawn_point + Vector3(0, 0, 30)), "timsah gölden uzaklaşmamalı")
+
+
+func test_puppy_can_be_adopted_raised_and_guards() -> void:
+	var dog: Dog = world.animals.spawn_animal("dog", player.global_position + Vector3(4, 0, 0))
+	await wait_physics_frames(1)
+	assert_false(dog.adopted)
+	player.inventory.remove("meat_raw", player.inventory.count_of("meat_raw"))
+	player.inventory.remove("meat_cooked", player.inventory.count_of("meat_cooked"))
+	player.inventory.remove("fish_raw", player.inventory.count_of("fish_raw"))
+	player.inventory.remove("fish_cooked", player.inventory.count_of("fish_cooked"))
+	assert_false(dog.get_interaction(player, 0).has("action"), "yiyecek olmadan sahiplenilmemeli")
+	player.inventory.add("meat_cooked", 3)
+	(dog.get_interaction(player, 0).action as Callable).call()
+	assert_true(dog.adopted)
+	assert_true(dog.is_in_group("pet"))
+	assert_lt(dog.growth(), 0.6, "başta yavru boyunda")
+	# Beslenen köpek her gün büyür.
+	for d in 4:
+		dog.fed_day = TimeOfDay.day
+		dog._on_new_day(TimeOfDay.day + 1)
+	assert_true(dog.is_adult())
+	assert_almost_eq(dog.growth(), 1.0, 0.01)
+	# Takip: uzaklaşınca peşinden gelir.
+	player.global_position += Vector3(20, 0, 0)
+	dog.think(0.1, player, 20.0)
+	assert_eq(dog._speed, dog.run_speed)
+	# Otur komutu.
+	(dog.get_interaction(player, 0).action as Callable).call()
+	assert_eq(dog.command, "stay")
+	(dog.get_interaction(player, 0).action as Callable).call()
+	assert_eq(dog.command, "follow")
+	# Saldıran kurda karşı korur.
+	player.global_position = dog.global_position + Vector3(1.5, 0, 0)
+	var wolf := _spawn("wolf", Vector3(1.0, 0, 0)) as Wolf
+	await wait_physics_frames(1)
+	wolf.set_state(AnimalBase.State.CHASE)
+	var hp := wolf.health
+	dog._bite_cd = 0.0
+	dog.global_position = wolf.global_position + Vector3(1.0, 0, 0)
+	dog.think(0.1, player, 1.0)
+	assert_eq(dog._threat, wolf, "köpek tehlikeyi fark etmeli")
+	assert_lt(wolf.health, hp, "yetişkin köpek kurdu ısırmalı")
+
+
+func test_player_hits_do_not_hurt_dog() -> void:
+	var dog: Dog = world.animals.spawn_animal("dog", player.global_position + Vector3(2, 0, 0))
+	await wait_physics_frames(1)
+	var hp := dog.health
+	dog.take_hit(30.0, player)
+	assert_eq(dog.health, hp)
+	dog.take_hit(999.0, null)
+	assert_true(dog.is_alive(), "köpek ölmez, yaralanır")
+	assert_gt(dog.hurt_time, 0.0)
+
+
+func test_dog_state_is_saved() -> void:
+	var dog: Dog = world.animals.spawn_animal("dog", player.global_position + Vector3(3, 0, 0))
+	await wait_physics_frames(1)
+	dog.adopted = true
+	dog.age_days = 2.0
+	dog.command = "stay"
+	var d: Dictionary = JSON.parse_string(JSON.stringify(dog.save_state()))
+	var copy := Dog.new()
+	copy.load_state(d)
+	assert_true(copy.adopted)
+	assert_eq(copy.age_days, 2.0)
+	assert_eq(copy.command, "stay")
+	copy.free()

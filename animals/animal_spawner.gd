@@ -11,6 +11,7 @@ const SPECIES := {
 	"bear": preload("res://animals/bear.gd"),
 	"snake": preload("res://animals/snake.gd"),
 	"crocodile": preload("res://animals/crocodile.gd"),
+	"dog": preload("res://animals/dog.gd"),
 }
 const CROCODILES := 2
 const RABBITS := 10
@@ -54,6 +55,7 @@ func populate(spawn: Vector3) -> void:
 		if p != Vector3.INF:
 			spawn_animal("bear", p)
 	spawn_crocodiles(spawn)
+	spawn_puppy(spawn)
 	for i in SNAKES:
 		var p := _random_spot(spawn, 35.0, 400.0, false)
 		if p != Vector3.INF:
@@ -118,6 +120,14 @@ func spawn_birds(spawn: Vector3) -> void:
 		flock.count = rng.randi_range(2, 4)
 		flock.position = Vector3(cos(a) * r, 0, sin(a) * r)
 		add_child(flock)
+
+
+## Kaybolmuş yavru: başlangıçtan 25–45 m uzakta, sesinden bulunur.
+func spawn_puppy(spawn: Vector3) -> void:
+	var p := _random_spot(spawn, 25.0, 45.0, true)
+	if p != Vector3.INF:
+		var puppy := spawn_animal("dog", p)
+		puppy.home = p
 
 
 ## Timsahlar gölde, başlangıç noktasının karşı tarafında başlar.

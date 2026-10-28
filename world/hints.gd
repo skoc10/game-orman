@@ -19,6 +19,7 @@ const TEXTS := {
 	"snake": "Yılan! Tıslıyorsa geri çekil; ısırığı zehirlidir.",
 	"cave": "Mağara ağzı! İçerisi zifiri karanlık; girmeden önce meşale yap. Bazı mağaralarda ayı uyur.",
 	"croc": "Gölde timsah var! Su içerken etrafına bak; tıslama duyarsan sudan birkaç adım uzaklaş.",
+	"puppy": "Yakında bir yavru köpek inliyor! Ona et ya da balık verirsen seninle gelir.",
 	"fish": "Suda balıklar var! Mızrakla vurabilir ya da 2 dal ve 1 ipten olta yapabilirsin.",
 }
 
@@ -58,10 +59,11 @@ func _next(p: Player) -> String:
 		"bear": _near(p, "bear", 35.0),
 		"snake": _near(p, "snake", 8.0),
 		"fish": _fish_near(p),
+		"puppy": _stray_near(p),
 		"croc": _near(p, "crocodile", 25.0),
 		"cave": _near_mouth(p),
 	}
-	for id in ["start", "bear", "croc", "snake", "dusk", "wolves", "thirst", "hunger", "craft", "axe", "meat", "canteen", "cave", "fish", "shelter"]:
+	for id in ["start", "bear", "croc", "snake", "dusk", "wolves", "thirst", "hunger", "craft", "axe", "meat", "canteen", "puppy", "cave", "fish", "shelter"]:
 		if not shown.has(id) and conditions[id]:
 			return id
 	return ""
@@ -77,6 +79,13 @@ func _near(p: Player, group: String, radius: float) -> bool:
 func _near_mouth(p: Player) -> bool:
 	for m in get_tree().get_nodes_in_group("cave_mouth"):
 		if m.outside and m.global_position.distance_to(p.global_position) < 14.0:
+			return true
+	return false
+
+
+func _stray_near(p: Player) -> bool:
+	for d in get_tree().get_nodes_in_group("dog"):
+		if not d.adopted and d.global_position.distance_to(p.global_position) < 20.0:
 			return true
 	return false
 

@@ -126,6 +126,14 @@ func on_world_ready(world: Node) -> void:
 			ap.y = world.gen.height_at(ap.x, ap.z) + 0.1
 			var a: AnimalBase = world.animals.spawn_animal(kv[0], ap)
 			a.rotation.y = player.rotation.y
+	if args.has("dog"):
+		# --dog=yavru|yetişkin: önüne sahiplenilmiş bir köpek koyar.
+		var dp: Vector3 = player.global_position - player.global_transform.basis.z * 3.0
+		dp.y = world.gen.height_at(dp.x, dp.z) + 0.1
+		var dog: Dog = world.animals.spawn_animal("dog", dp)
+		dog.adopted = str(args.dog) != "sahipsiz"
+		dog.age_days = 4.0 if str(args.dog) == "yetiskin" else 0.0
+		dog.rotation.y = player.rotation.y + PI
 	if args.has("kill"):
 		for a in world.get_tree().get_nodes_in_group("animal"):
 			if a.global_position.distance_to(player.global_position) < 15.0:

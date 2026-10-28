@@ -211,6 +211,8 @@ func travel(target: Vector3, yaw_deg: float) -> void:
 	if hud:
 		await hud.fade_to(1.0, 0.45).finished
 	player.teleport(target, yaw_deg, 0.0)
+	for dog in get_tree().get_nodes_in_group("pet"):
+		dog.follow_through(player)
 	await get_tree().physics_frame
 	if hud:
 		await hud.fade_to(0.0, 0.6).finished
