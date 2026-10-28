@@ -14,6 +14,9 @@ The Forest'tan esinlendi ama **zombi, yamyam ya da gece saldırısı yok**. Tehl
 | ![Geyikler](docs/screenshots/geyikler.jpg) | ![Kurtlar](docs/screenshots/kurtlar.jpg) |
 | ![Ayı](docs/screenshots/ayi.jpg) | ![Mağara ağzı](docs/screenshots/magara_agzi.jpg) |
 | ![Olta ile balık avı](docs/screenshots/olta.jpg) | ![Meşaleyle mağara içi](docs/screenshots/magara_ici.jpg) |
+| ![Yerli köyü](docs/screenshots/koy.jpg) | ![Şefle takas](docs/screenshots/takas.jpg) |
+| ![Salda balık tutma](docs/screenshots/sal.jpg) | ![Gölde timsah](docs/screenshots/timsah.jpg) |
+| ![Yay ve ok](docs/screenshots/yay.jpg) | ![Köpek](docs/screenshots/kopek.jpg) |
 
 ## Özellikler
 
@@ -27,21 +30,27 @@ The Forest'tan esinlendi ama **zombi, yamyam ya da gece saldırısı yok**. Tehl
   - Yerde dal ve taş, uzun otlarda lif, çalılarda böğürtlen, ormanda mantar bulunuyor. Toplananlar birkaç gün sonra yeniden çıkıyor.
   - E basıldığı anda çalışıyor; yerdeki eşyalara tam nişan almak gerekmiyor. E basılı tutulunca art arda toplanıyor.
   - Büyük kayalar baltayla kırılıp taş veriyor.
-  - Üretilebilenler: ip, taş bıçak, taş balta, mızrak, meşale, bitki bandajı, deri giysi ve olta.
+  - Üretilebilenler: ip, taş bıçak, taş balta, mızrak, yay, ok, meşale, bitki bandajı, deri giysi ve olta.
+- **Yay ve ok:** Vur basılı tutulunca yay gerilir, bırakınca ok atılır; ne kadar gerersen o kadar uzağa ve sert gider. Okların çoğu yere düşer ve yeniden toplanır.
 - **Ağaç kesme:** Baltayla kesilen ağaç devriliyor, geriye kütük ve dal bırakıyor.
 - **Kamp ateşi:**
   - Yakıtla yanıyor; ışık ve ısı veriyor, kurtları uzak tutuyor.
   - Üstünde üç pişirme yeri var. Et pişiyor; fazla beklersen yanıyor.
   - Metal kapla su kaynatılıyor.
-- **İnşa:** Yeşil/kırmızı önizlemeyle kamp ateşi, dal barınak ve saklama sandığı kurulabiliyor. Barınakta gece uyuyup sabaha atlanıyor, gündüz dinlenip kaydediliyor.
+- **İnşa:** Yeşil/kırmızı önizlemeyle kamp ateşi, dal barınak, saklama sandığı ve sal kurulabiliyor. Barınakta gece uyuyup sabaha atlanıyor, gündüz dinlenip kaydediliyor.
 - **Hayvanlar:** Hepsi iki eklemli bacaklı, kaslı low-poly modellerle çiziliyor; engellerin etrafından dolaşıyorlar.
   - **Geyik:** Sürüyle otluyor. Fark edince başını kaldırıp bakıyor, yaklaşınca sekerek ve zikzak çizerek kaçıyor; sürü aynı yöne kaçıyor, güvenli mesafede durup geri bakıyor.
   - **Tavşan:** Açıklıklarda otluyor, keskin zikzaklarla kaçıp saklanıyor.
   - **Kurt:** Zayıf ve uzun bacaklı. Sürüyle önce etrafında dönüyor, sonra saldırıyor; ısırıp geri çekiliyor. Ateşin çevresine girmiyor, meşaleye mesafe koruyor, yaralanınca kaçıyor.
   - **Ayı:** Sık ormanda ve mağarada yaşıyor. Arka ayakları üstüne kalkıp kükreyerek uyarıyor; uzaklaşırsan bırakıyor, yaklaşırsan saldırıyor. Koşarak kaçılamıyor, ateşe yaklaşmıyor.
   - **Yılan:** Otlarda ve mağaralarda kıvrılıp yatıyor; çok yaklaşınca tıslıyor, sonra zehirli ısırıyor.
+  - **Timsah:** Gölde yarı batık yüzüyor, öğlen kıyıda güneşleniyor. Suda ya da su kenarındaysan sinsice yaklaşıp tıslıyor ve atılıp ağır ısırıyor. Sudan uzaklaşmıyor; kıyıdan geri çekilen kurtuluyor.
+  - **Köpek:** Ormanda inleyen, kaybolmuş bir yavru var. Et ya da balık verince seninle geliyor; her gün beslersen büyüyor, 4 günde yetişkin oluyor. Tehlikede havlıyor, yetişkinken saldıranlarla dövüşüyor. E ile otur/takip et komutu verilir.
+  - **Sesler:** Kurt etrafında dönerken hırlıyor, saldırırken hırıldıyor; ayı yakındayken homurdanıyor, uyarırken kükrüyor; yılan ve timsah tıslıyor. Tehlikeyi görmeden duyabiliyorsun.
   - **Kuşlar:** Yerde gagalıyor, yaklaşınca havalanıp başka yere konuyor; kıyıda martılar dönüyor.
   - Leşi bıçakla kesince et ve deri alınıyor. Mızrak fırlatılabiliyor.
+- **Sal:** 6 kütük ve 3 ipten yapılır, kıyıya yakın derin suya kurulur. Binince hareket tuşları bakılan yöne kürek çektirir. Açık denizde daha kalabalık balık sürüleri var; saldan olta atılabilir.
+- **Yerli köyü:** Adada çadırlarda yaşayan bir köy var; uzaktan davul sesinden bulunur. Meydanda sönmeyen bir ateş yanıyor, kurt ve ayı köye girmiyor. Şefle eşya takas edebilirsin: teklifler her gün değişir (örneğin 2 deri → yay, 2 pişmiş balık → 8 ok, 2 pişmiş et → şifalı karışım). Misafir çadırında uyuyup kaydedebilirsin.
 - **Balıklar:** Gölde ve kıyıya yakın denizde balık sürüleri var. Mızrakla vurulan balık yüzeye çıkıyor. Oltayı suya atınca şamandıra batana kadar bekliyorsun, sonra E ile çekiyorsun; geç kalırsan balık kaçıyor.
 - **Mağaralar:** Yamaçlardaki kaya kemerli ağızlardan giriliyor. İçerisi meşalesiz zifiri karanlık ama rüzgarsız ve ılık.
   - **Ayı ini:** Geniş bir odada uyuyan bir ayı ve eski bir kampçının erzakı var.
@@ -104,6 +113,9 @@ Telefon ve tablette ekran düğmeleri otomatik açılır: sol tarafta parmağın
 8. Kurtlar gelince ateşin yanında kal ya da meşaleyi elinde tut. Ayıdan koşarak kaçamazsın: kükrerse yavaşça uzaklaş.
 9. Balık için mızrak ya da olta kullan; balığı da ateşte pişir.
 10. Mağaralara meşalesiz girme. Ayı inindeki erzak değerli ama ayıyı uyandırma.
+11. Davul sesini takip edip yerli köyünü bul; deri, balık ve eti işine yarayan eşyalarla takas et.
+12. İnleyen yavru köpeği bul ve besle; büyüyünce seni korur.
+13. Gölde su içerken timsaha dikkat et; tıslama duyarsan kıyıdan uzaklaş.
 
 ## Tarifler
 
@@ -117,9 +129,12 @@ Telefon ve tablette ekran düğmeleri otomatik açılır: sol tarafta parmağın
 | Bitki bandajı | 4 lif |
 | Deri giysi | 3 deri, 2 ip |
 | Olta | 2 dal, 1 ip |
+| Yay | 2 dal, 2 ip |
+| Ok (4 adet) | 1 dal, 1 taş, 1 lif |
 | **Kamp ateşi** (inşa) | 4 taş, 4 dal |
 | **Dal barınak** (inşa) | 4 kütük, 10 dal, 2 ip |
 | **Saklama sandığı** (inşa) | 3 kütük, 1 ip |
+| **Sal** (inşa, suya) | 6 kütük, 3 ip |
 
 Eşyalar `data/items/`, tarifler `data/recipes/` altında `.tres` dosyalarıdır. Yeni eşya ya da tarif eklemek için kod değişikliği gerekmez.
 
@@ -166,7 +181,7 @@ godot --headless --path . -s res://tools/gen_sfx.gd
 godot --path . -- --seed=42 --time=21.5 --campfire=cook --give=torch:1 --shot=/tmp/gece.png
 ```
 
-Diğer argümanlar: `--pos=x,z`, `--height=m`, `--yaw`, `--pitch`, `--atlake`, `--stats=can,tokluk,su,ısı`, `--animal=wolf:3` (deer, rabbit, bear, snake), `--place=shelter`, `--ghost=campfire`, `--fishing`, `--mouth=0`, `--cave=0`, `--inventory`, `--pause`, `--menu`, `--fpsprobe`.
+Diğer argümanlar: `--pos=x,z`, `--height=m`, `--yaw`, `--pitch`, `--atlake`, `--stats=can,tokluk,su,ısı`, `--animal=wolf:3` (deer, rabbit, bear, snake, crocodile), `--place=shelter`, `--ghost=campfire`, `--fishing`, `--raft`, `--dog=yavru`, `--village`, `--trade`, `--mouth=0`, `--cave=0`, `--inventory`, `--pause`, `--menu`, `--fpsprobe`.
 
 ### Gerçek hayvan modelleri (isteğe bağlı)
 
@@ -206,6 +221,12 @@ godot --headless --path . --export-release "Windows Desktop" export/windows/Orma
 - [ ] Tavşan ve geyiğin kaçışını izle; bir ayının uyarısını gör ve uzaklaş.
 - [ ] Oltayla ve mızrakla balık tut, pişir.
 - [ ] Meşaleyle bir mağaraya gir; labirentten kıyıya çık.
+- [ ] Yay ve ok yapıp bir geyik avla; okları geri topla.
+- [ ] Sal kur, açık denize kürek çek ve saldan balık tut.
+- [ ] Gölde timsahın yaklaşıp saldırdığını ve kıyıdan uzaklaşınca bıraktığını gör.
+- [ ] Yavru köpeği sahiplen, birkaç gün besleyip büyüt.
+- [ ] Yerli köyünü bul, şefle takas yap, misafir çadırında uyu.
+- [ ] Telefonda bakışın artık rahat kontrol edildiğini dene.
 - [ ] Oyunu kaydet, ana menüye dön, "Devam et" ile yükle.
 - [ ] Aç ya da susuz kalıp öl; ölüm ekranını ve rekoru gör.
 
