@@ -372,3 +372,51 @@ func test_weak_draw_does_less_damage() -> void:
 	assert_lt(weak.damage, ItemDB.get_item("arrow").throw_damage * 0.6)
 	weak.queue_free()
 	player.inventory.set_slot(0, {})
+
+
+func _lake_shore_point(gen: WorldGen) -> Vector3:
+	var c := gen.lake_center
+	for i in 200:
+		var p := c + Vector2(1, 0) * (i * 0.5)
+		if gen.height_at(p.x, p.y) > 0.3:
+			return Vector3(p.x, gen.height_at(p.x, p.y) + 0.1, p.y)
+	return Vector3.ZERO
+
+
+func test_crocodiles_live_in_the_lake() -> void:
+	# before_each yakındaki hayvanları temizlediği için yerleştirme yeniden çağrılır.
+	world.animals.spawn_crocodiles(world.spawn_point)
+	await wait_physics_frames(1)
+	var crocs := get_tree().get_nodes_in_group("crocodile")
+	assert_gt(crocs.size(), 0, "gölde timsah olmalı")
+	for c in crocs:
+		var p: Vector3 = c.global_position
+		assert_lt(world.gen.lake_distance(Vector2(p.x, p.z)), 1.4, "timsah gölde olmalı")
+
+
+func test_crocodile_stalks_player_at_shore_and_bites() -> void:
+	var shore := _lake_shore_point(world.gen)
+	player.teleport(shore)
+	var c: Vector2 = world.gen.lake_center
+	var croc: Crocodile = world.animals.spawn_animal("crocodile", Vector3(lerpf(c.x, shore.x, 0.7), -0.3, lerpf(c.y, shore.z, 0.7)))
+	croc.set_physics_process(false)
+	await wait_physics_frames(1)
+	assert_true(croc._is_prey(player), "su kenarındaki oyuncu av sayılmalı")
+	assert_false(croc.is_threat(), "boş gezerken uykuyu engellememeli")
+	croc.think(0.1, player, 10.0)
+	assert_eq(croc.state, AnimalBase.State.STALK)
+	assert_true(croc.is_threat())
+	croc.think(0.1, player, 4.0)
+	assert_eq(croc.state, AnimalBase.State.CHASE, "yakına gelince atılmalı")
+	croc.think(0.1, player, 2.0)
+	var hp := player.stats.health
+	croc.think(0.1, player, 2.0)
+	assert_lt(player.stats.health, hp - 20.0, "timsah ısırığı ağır olmalı")
+
+
+func test_crocodile_ignores_player_away_from_water() -> void:
+	var croc: Crocodile = world.animals.spawn_animal("crocodile", Vector3(world.gen.lake_center.x, -0.3, world.gen.lake_center.y))
+	await wait_physics_frames(1)
+	player.teleport(world.spawn_point + Vector3.UP * 0.1)
+	assert_false(croc._is_prey(player), "sudan uzaktaki oyuncu av değil")
+	assert_false(croc._walkable(world.spawn_point + Vector3(0, 0, 30)), "timsah gölden uzaklaşmamalı")

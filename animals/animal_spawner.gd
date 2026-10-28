@@ -10,7 +10,9 @@ const SPECIES := {
 	"rabbit": preload("res://animals/rabbit.gd"),
 	"bear": preload("res://animals/bear.gd"),
 	"snake": preload("res://animals/snake.gd"),
+	"crocodile": preload("res://animals/crocodile.gd"),
 }
+const CROCODILES := 2
 const RABBITS := 10
 const BEARS := 2
 const SNAKES := 12
@@ -51,6 +53,7 @@ func populate(spawn: Vector3) -> void:
 		var p := _forest_spot(spawn, 140.0)
 		if p != Vector3.INF:
 			spawn_animal("bear", p)
+	spawn_crocodiles(spawn)
 	for i in SNAKES:
 		var p := _random_spot(spawn, 35.0, 400.0, false)
 		if p != Vector3.INF:
@@ -104,6 +107,22 @@ func spawn_birds(spawn: Vector3) -> void:
 		flock.count = rng.randi_range(2, 4)
 		flock.position = Vector3(cos(a) * r, 0, sin(a) * r)
 		add_child(flock)
+
+
+## Timsahlar gölde, başlangıç noktasının karşı tarafında başlar.
+func spawn_crocodiles(spawn: Vector3) -> void:
+	var c := gen.lake_center
+	var away := c - Vector2(spawn.x, spawn.z)
+	away = away.normalized() if away.length() > 0.1 else Vector2.RIGHT
+	var placed := 0
+	for i in 60:
+		if placed >= CROCODILES:
+			break
+		var p := c + away.rotated(rng.randf_range(-0.9, 0.9)) * gen.lake_radius * rng.randf_range(0.2, 0.7)
+		if gen.height_at(p.x, p.y) < WorldGen.WATER_LEVEL - 0.6:
+			var croc := spawn_animal("crocodile", Vector3(p.x, WorldGen.WATER_LEVEL - 0.3, p.y))
+			croc.home = Vector3(c.x, 0, c.y)
+			placed += 1
 
 
 ## Sık ormanda, oyuncudan uzak bir nokta (ayı inleri için).
