@@ -73,6 +73,9 @@ func think(delta: float, player: Player, dist: float) -> void:
 				_roar()
 				set_state(State.ALERT)
 			else:
+				# Yakındaysa (görmeden önce de) homurdanır: ayının yerini sesten anla.
+				if dist < territory * 2.2:
+					vocal("bear_growl", rng.randf_range(6.0, 10.0), 4.0, 60.0)
 				wander(delta)
 		State.ALERT:
 			# Arka ayakları üstüne kalkıp uyarır.
@@ -84,6 +87,7 @@ func think(delta: float, player: Player, dist: float) -> void:
 				elif dist > territory * 1.4:
 					set_state(State.WANDER)
 		State.CHASE:
+			vocal("bear_growl", rng.randf_range(2.0, 3.5), 7.0, 70.0)
 			move_to(player.global_position, run_speed)
 			face(player.global_position, delta)
 			if dist < SWIPE_RANGE:
@@ -118,13 +122,16 @@ func on_hurt(_attacker: Node3D) -> void:
 
 
 func _roar() -> void:
-	Sfx.play_at("bear_roar", global_position + Vector3.UP, 4.0, 70.0, 0.1)
+	_vocal_cd = 0.0
+	vocal("bear_roar", 2.0, 8.0, 90.0)
 
 
 func _swipe(player: Player) -> void:
 	_swipe_cd = SWIPE_COOLDOWN
 	_swipes += 1
 	player.take_damage(SWIPE_DAMAGE, "ayı")
+	_vocal_cd = 0.0
+	vocal("bear_roar", 1.5, 8.0, 90.0)
 	var push := player.global_position - global_position
 	push.y = 0.0
 	player.velocity += push.normalized() * 5.0 + Vector3.UP * 2.0

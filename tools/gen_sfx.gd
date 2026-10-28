@@ -31,6 +31,16 @@ func _init() -> void:
 	_save("bear_roar", _bear_roar())
 	_save("snake_hiss", _snake_hiss())
 	_save("bird_takeoff", _bird_takeoff())
+	_save("wolf_snarl", _wolf_snarl())
+	_save("bear_growl", _bear_growl())
+	_save("croc_hiss", _croc_hiss())
+	_save("dog_bark", _dog_bark(false))
+	_save("puppy_yip", _dog_bark(true))
+	_save("dog_whine", _dog_whine())
+	_save("bow_release", _bow_release())
+	_save("arrow_hit", _arrow_hit())
+	_save("trade", _trade())
+	_save("drum_loop", _loopify(_drums(8.4), 0.4), true)
 	_save("fire_loop", _loopify(_fire(4.3), 0.3), true)
 	_save("wind_loop", _loopify(_wind(8.5), 0.5), true)
 	_save("birds_loop", _loopify(_birds(12.4), 0.4), true)
@@ -286,12 +296,146 @@ func _bear_roar() -> PackedFloat32Array:
 
 func _snake_hiss() -> PackedFloat32Array:
 	rng.seed = 31
-	var n := int(RATE * 0.9)
-	var s := _highpass(_noise(n), 3500.0)
+	var n := int(RATE * 1.1)
+	var s := _highpass(_noise(n), 2800.0)
 	for i in n:
 		var t := float(i) / RATE
-		s[i] *= smoothstep(0.0, 0.08, t) * (1.0 - smoothstep(0.6, 0.9, t))
+		# Nefes alır gibi dalgalanan uzun tıslama.
+		var swell := 0.7 + 0.3 * sin(TAU * 7.0 * t)
+		s[i] *= smoothstep(0.0, 0.05, t) * (1.0 - smoothstep(0.8, 1.1, t)) * swell
 	return s
+
+
+## Kurt saldırırken: kısa, sert hırıltı ve havlama.
+func _wolf_snarl() -> PackedFloat32Array:
+	rng.seed = 33
+	var n := int(RATE * 0.7)
+	var src := _lowpass(_noise(n), 900.0)
+	var out := PackedFloat32Array()
+	out.resize(n)
+	var phase := 0.0
+	for i in n:
+		var t := float(i) / RATE
+		var f := lerpf(260.0, 170.0, t / 0.7)
+		phase += TAU * f / RATE
+		var rough := 0.5 + 0.5 * sin(TAU * 38.0 * t)
+		var env := _env(t, 0.02, 4.0)
+		out[i] = (src[i] * 2.4 + sin(phase) * 0.45 + sin(phase * 2.0) * 0.2) * rough * env
+	return out
+
+
+## Ayı yaklaşırken: derin, uzun homurtu.
+func _bear_growl() -> PackedFloat32Array:
+	rng.seed = 34
+	var n := int(RATE * 1.6)
+	var src := _lowpass(_noise(n), 260.0)
+	var out := PackedFloat32Array()
+	out.resize(n)
+	for i in n:
+		var t := float(i) / RATE
+		var rough := 0.55 + 0.45 * sin(TAU * (18.0 + sin(t * 2.0) * 4.0) * t)
+		var env := smoothstep(0.0, 0.25, t) * (1.0 - smoothstep(1.2, 1.6, t))
+		out[i] = (src[i] * 3.5 + sin(TAU * 62.0 * t) * 0.35) * rough * env
+	return out
+
+
+## Timsah: boğuk, derin tıslama.
+func _croc_hiss() -> PackedFloat32Array:
+	rng.seed = 35
+	var n := int(RATE * 1.2)
+	var hiss := _lowpass(_highpass(_noise(n), 500.0), 2500.0)
+	var out := PackedFloat32Array()
+	out.resize(n)
+	for i in n:
+		var t := float(i) / RATE
+		out[i] = (hiss[i] * 1.6 + sin(TAU * 48.0 * t) * 0.3) * smoothstep(0.0, 0.1, t) * (1.0 - smoothstep(0.8, 1.2, t))
+	return out
+
+
+## Köpek havlaması; yavruda daha ince ve kısa.
+func _dog_bark(puppy: bool) -> PackedFloat32Array:
+	rng.seed = 36 if puppy else 37
+	var dur := 0.22 if puppy else 0.3
+	var n := int(RATE * dur)
+	var src := _lowpass(_noise(n), 1800.0 if puppy else 1100.0)
+	var out := PackedFloat32Array()
+	out.resize(n)
+	var phase := 0.0
+	for i in n:
+		var t := float(i) / RATE
+		var f := lerpf(900.0 if puppy else 420.0, 600.0 if puppy else 260.0, t / dur)
+		phase += TAU * f / RATE
+		var env := _env(t, 0.01, 12.0 if puppy else 9.0)
+		out[i] = (sin(phase) * 0.7 + sin(phase * 2.0) * 0.3 + src[i] * 1.2) * env
+	return out
+
+
+func _dog_whine() -> PackedFloat32Array:
+	var n := int(RATE * 0.6)
+	var out := PackedFloat32Array()
+	out.resize(n)
+	var phase := 0.0
+	for i in n:
+		var t := float(i) / RATE
+		phase += TAU * lerpf(900.0, 1300.0, sin(t / 0.6 * PI)) / RATE
+		out[i] = sin(phase) * sin(t / 0.6 * PI) * 0.6
+	return out
+
+
+func _bow_release() -> PackedFloat32Array:
+	rng.seed = 38
+	var n := int(RATE * 0.35)
+	var out := PackedFloat32Array()
+	out.resize(n)
+	var whoosh := _highpass(_noise(n), 1500.0)
+	for i in n:
+		var t := float(i) / RATE
+		out[i] = sin(TAU * 130.0 * t) * exp(-t * 18.0) * 0.8 + whoosh[i] * exp(-t * 14.0) * 0.4
+	return out
+
+
+func _arrow_hit() -> PackedFloat32Array:
+	rng.seed = 39
+	var n := int(RATE * 0.2)
+	var src := _lowpass(_noise(n), 2500.0)
+	var out := PackedFloat32Array()
+	out.resize(n)
+	for i in n:
+		var t := float(i) / RATE
+		out[i] = (src[i] + sin(TAU * 320.0 * t) * 0.5) * exp(-t * 35.0)
+	return out
+
+
+## Takas tamamlandı: iki tahta tıkırtısı ve hafif çan.
+func _trade() -> PackedFloat32Array:
+	var n := int(RATE * 0.45)
+	var out := PackedFloat32Array()
+	out.resize(n)
+	for i in n:
+		var t := float(i) / RATE
+		out[i] = sin(TAU * 880.0 * t) * exp(-t * 6.0) * 0.35 + sin(TAU * 1320.0 * t) * exp(-t * 8.0) * 0.2
+	return out
+
+
+## Köyden gelen uzak davul sesi.
+func _drums(dur: float) -> PackedFloat32Array:
+	rng.seed = 40
+	var n := int(RATE * dur)
+	var out := PackedFloat32Array()
+	out.resize(n)
+	var beat := 0.6
+	var t := 0.0
+	var k := 0
+	while t < dur:
+		var start := int(t * RATE)
+		var f := 70.0 if k % 4 != 3 else 110.0
+		var amp := 1.0 if k % 2 == 0 else 0.6
+		for i in range(start, mini(n, start + int(RATE * 0.4))):
+			var x := float(i - start) / RATE
+			out[i] += sin(TAU * f * x * (1.0 - x * 0.5)) * exp(-x * 9.0) * amp
+		t += beat * (0.5 if k % 4 == 1 else 1.0)
+		k += 1
+	return _lowpass(out, 400.0)
 
 
 func _bird_takeoff() -> PackedFloat32Array:

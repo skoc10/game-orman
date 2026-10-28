@@ -150,3 +150,28 @@ func test_stick_starts_from_home_base() -> void:
 	_tap(home + Vector2(20, 10), 5, true)
 	assert_eq(touch._stick_origin, home, "taban yakınına dokununca çubuk tabandan başlamalı")
 	_tap(home + Vector2(20, 10), 5, false)
+
+
+func test_fast_swipe_turns_moderately() -> void:
+	var size := _screen()
+	var yaw := player.rotation.y
+	var p := Vector2(size.x * 0.6, size.y * 0.4)
+	_tap(p, 6, true)
+	for i in 10:
+		# Hızlı kaydırma: olay başına 80 birim.
+		p += Vector2(80, 0)
+		_drag(p, Vector2(80, 0), 6)
+	_tap(p, 6, false)
+	await wait_seconds(1.0)
+	var turned := absf(rad_to_deg(angle_difference(yaw, player.rotation.y)))
+	assert_between(turned, 20.0, 70.0, "hızlı kaydırma kamerayı savurmamalı (%.1f°)" % turned)
+
+
+func test_vertical_look_is_slower() -> void:
+	touch._look_pending = Vector2.ZERO
+	var p := Vector2(_screen().x * 0.6, _screen().y * 0.5)
+	_tap(p, 7, true)
+	_drag(p + Vector2(30, 30), Vector2(30, 30), 7)
+	_tap(p + Vector2(30, 30), 7, false)
+	assert_lt(absf(touch._look_pending.y), absf(touch._look_pending.x))
+	touch._look_pending = Vector2.ZERO

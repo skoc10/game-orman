@@ -40,6 +40,7 @@ var _knees: Array[Node3D] = []
 var _head: Node3D
 var _tail: Node3D
 var _steer_timer := 0.0
+var _vocal_cd := 0.0
 var _steer_turn := 0.0
 var _state_time := 0.0
 var _target := Vector3.ZERO
@@ -127,9 +128,19 @@ func _physics_process(delta: float) -> void:
 		_far_update(delta)
 		return
 	_state_time += delta
+	_vocal_cd = maxf(0.0, _vocal_cd - delta)
 	think(delta, player, dist)
 	_apply_movement(delta)
 	_animate(delta)
+
+
+## Hayvan sesi: bekleme süresi dolmadıysa çalmaz, böylece ses üst üste binmez.
+## Sesler bilerek yüksek ve uzaktan duyulur; tehlike önce kulakla fark edilsin.
+func vocal(sound: String, cooldown: float, volume_db := 4.0, max_distance := 60.0) -> void:
+	if _vocal_cd > 0.0 or not is_inside_tree():
+		return
+	_vocal_cd = cooldown
+	Sfx.play_at(sound, global_position + Vector3.UP * 0.8, volume_db, max_distance, 0.12)
 
 
 func set_state(s: State) -> void:

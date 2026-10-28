@@ -309,3 +309,19 @@ func test_snake_rests_on_sloped_ground() -> void:
 		var p: Vector3 = seg.global_position
 		assert_almost_eq(p.y, world.gen.height_at(p.x, p.z), 0.15, "yılan halkası zemine değmeli")
 	snake.queue_free()
+
+
+func test_predators_vocalise_when_close() -> void:
+	var wolf := _spawn("wolf", Vector3(8, 0, 0)) as Wolf
+	var bear := _spawn("bear", Vector3(-10, 0, 0)) as Bear
+	var snake := _spawn("snake", Vector3(0, 0, 3)) as Snake
+	await wait_physics_frames(1)
+	wolf.think(0.1, player, 8.0)
+	assert_gt(wolf._vocal_cd, 0.0, "kurt fark edince hırlamalı")
+	bear.think(0.1, player, 10.0)
+	assert_gt(bear._vocal_cd, 0.0, "ayı fark edince kükremeli")
+	snake.think(0.1, player, 3.0)
+	assert_gt(snake._vocal_cd, 0.0, "yılan yaklaşınca tıslamalı")
+	snake._vocal_cd = 0.0
+	snake.think(0.1, player, 3.0)
+	assert_gt(snake._vocal_cd, 0.0, "yılan uyarı boyunca tıslamaya devam etmeli")

@@ -39,6 +39,8 @@ func think(delta: float, player: Player, dist: float) -> void:
 		State.ALERT:
 			stop()
 			face(player.global_position, delta)
+			# Uyarı sürdükçe tıslamaya devam eder.
+			vocal("snake_hiss", 1.3, 6.0, 25.0)
 			if dist > WARN_RANGE * 1.6 and _state_time > 1.0:
 				set_state(State.IDLE)
 			elif dist < BITE_RANGE and _bite_cd <= 0.0 and _state_time > 0.6:
@@ -50,7 +52,8 @@ func think(delta: float, player: Player, dist: float) -> void:
 				set_state(State.ALERT)
 		_:
 			if dist < WARN_RANGE:
-				Sfx.play_at("snake_hiss", global_position + Vector3.UP * 0.2, 0.0, 15.0, 0.15)
+				_vocal_cd = 0.0
+				vocal("snake_hiss", 1.3, 6.0, 25.0)
 				set_state(State.ALERT)
 			elif rng.randf() < 0.2 * delta:
 				wander(delta)

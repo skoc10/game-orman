@@ -9,9 +9,16 @@ const STICK_RADIUS := 80.0
 ## Sol alttaki sabit çubuk tabanı (sol-alt köşeye göre).
 const STICK_HOME := Vector2(150, -150)
 ## Derece / birim. Ayarlardaki bakış hassasiyeti (varsayılan 0.25) ile çarpılır.
-const LOOK_SENSITIVITY := 0.2
+## Ekranın yarısı kadar sürükleme yaklaşık 60° döndürür.
+const LOOK_SENSITIVITY := 0.11
+## Yukarı/aşağı bakış yataydan daha yavaştır; ufuk kolay kaymaz.
+const LOOK_VERTICAL := 0.65
 ## Bakış yumuşatma hızı: büyüdükçe daha keskin.
-const LOOK_SMOOTHING := 22.0
+const LOOK_SMOOTHING := 14.0
+## Saniyedeki en fazla dönüş (derece); hızlı bir kaydırma kamerayı savurmaz.
+const LOOK_MAX_SPEED := 240.0
+## Tek dokunma olayında en fazla hareket (birim); parmak sıçramaları yutulur.
+const LOOK_MAX_EVENT := 45.0
 
 ## [eylem, yazı, merkez (negatif = sağ/alt kenardan), yarıçap, tür]
 ## tür: "hold" basılı tutma, "toggle" aç/kapa, "tap" tek dokunuş.
@@ -101,6 +108,7 @@ func _process(delta: float) -> void:
 		var step := _look_pending * (1.0 - exp(-LOOK_SMOOTHING * delta))
 		if _look_pending.length() < 0.05:
 			step = _look_pending
+		step = step.limit_length(LOOK_MAX_SPEED * delta)
 		_look_pending -= step
 		player.look_by(step)
 	_root.queue_redraw()
@@ -175,9 +183,10 @@ func _on_drag(e: InputEventScreenDrag) -> void:
 		get_viewport().set_input_as_handled()
 	elif e.index == _look_touch or e.index == _attack_touch:
 		var sens := float(GameState.settings.mouse_sensitivity) / 0.25 * LOOK_SENSITIVITY
-		# Hızlı kaydırmada biraz hızlanır, yavaş sürüklemede hassas kalır.
-		var accel := 1.0 + clampf(e.relative.length() / 40.0, 0.0, 1.0) * 0.6
-		_look_pending += e.relative * sens * accel
+		var rel := e.relative.limit_length(LOOK_MAX_EVENT)
+		_look_pending += Vector2(rel.x, rel.y * LOOK_VERTICAL) * sens
+		# Parmak kalkınca bekleyen dönüş uzun süre devam etmesin.
+		_look_pending = _look_pending.limit_length(90.0)
 		get_viewport().set_input_as_handled()
 
 

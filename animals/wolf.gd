@@ -41,7 +41,11 @@ func _ready() -> void:
 
 func set_state(s: State) -> void:
 	if s == State.CHASE and state != State.CHASE and is_inside_tree():
-		Sfx.play_at("wolf_growl", global_position + Vector3.UP * 0.7, 0.0, 35.0, 0.15)
+		_vocal_cd = 0.0
+		vocal("wolf_snarl", 1.5, 6.0, 55.0)
+	elif s == State.STALK and state != State.STALK and is_inside_tree():
+		_vocal_cd = 0.0
+		vocal("wolf_growl", 3.0, 5.0, 50.0)
 	super.set_state(s)
 
 
@@ -85,6 +89,8 @@ func think(delta: float, player: Player, dist: float) -> void:
 				_follow_or_wander(delta)
 		State.STALK:
 			_orbit(player, maxf(9.0, keep + 2.0), delta)
+			# Etrafında dönerken arada hırlar.
+			vocal("wolf_growl", rng.randf_range(3.5, 6.0), 4.0, 50.0)
 			if dist > aware * 2.0:
 				set_state(State.WANDER)
 			elif _state_time > _stalk_for:
@@ -166,7 +172,9 @@ func _bite(player: Player) -> void:
 	_bites += 1
 	var dmg := Balance.d.wolf_bite_damage * (1.2 if TimeOfDay.is_night() else 1.0)
 	player.take_damage(dmg, "kurt")
-	Sfx.play_at("bite", global_position + Vector3.UP * 0.7, 0.0, 30.0)
+	Sfx.play_at("bite", global_position + Vector3.UP * 0.7, 2.0, 30.0)
+	_vocal_cd = 0.0
+	vocal("wolf_snarl", 1.0, 6.0, 55.0)
 	var push := player.global_position - global_position
 	push.y = 0.0
 	player.velocity += push.normalized() * 3.0 + Vector3.UP * 1.5
